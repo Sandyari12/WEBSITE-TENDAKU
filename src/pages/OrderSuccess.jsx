@@ -83,7 +83,7 @@ const OrderSuccess = () => {
           <div className="flex flex-row flex-wrap justify-center gap-x-12 gap-y-4">
             <div className="flex items-center">
               <EnvironmentOutlined className="mr-2 text-blue-500" />
-              <div className="text-gray-700 text-left">Lokasi Pengambilan: <strong className="text-gray-900">Jl. Contoh Alamat No. 123, Kota Anda</strong></div>
+              <div className="text-gray-700 text-left">Lokasi Pengambilan: <strong className="text-gray-900">Jl. Dewi Sartika No. 123, Kota Singaraja</strong></div>
             </div>
             <div className="flex items-center">
               <HomeOutlined className="mr-2 text-blue-500" />
