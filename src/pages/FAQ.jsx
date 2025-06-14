@@ -9,7 +9,7 @@ const FAQ = () => {
   const faqs = [
     {
       question: 'Bagaimana cara menyewa alat camping?',
-      answer: 'Anda dapat menyewa alat camping dengan cara mendaftar/login terlebih dahulu, kemudian pilih produk yang ingin disewa, isi form penyewaan, dan lakukan pembayaran.'
+      answer: 'Anda dapat menyewa alat camping dengan cara mendaftar/login terlebih dahulu, kemudian pilih produk yang ingin disewa, isi form penyewaan, dan lakukan pembayaran saat pengambilan alat camping.'
     },
     {
       question: 'Berapa lama durasi minimal penyewaan?',

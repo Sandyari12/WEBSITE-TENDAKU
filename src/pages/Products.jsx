@@ -4,7 +4,7 @@ import { SearchOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { products } from '../data/products';
+import { useProducts } from '../context/ProductContext';
 
 const { Title, Paragraph } = Typography;
 const { Option } = Select;
@@ -13,7 +13,8 @@ const Products = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
   const { user } = useAuth();
-  const { addToCart } = useCart();
+  const { products } = useProducts();
+  const { addToCart, cart } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -28,6 +29,13 @@ const Products = () => {
     if (!user) {
       message.warning('Silakan login terlebih dahulu');
       navigate('/login');
+      return;
+    }
+    console.log('Value of cart from useCart:', cart);
+    const inCart = (cart || []).find(item => item.id === product.id)?.quantity || 0;
+    console.log('Product ID:', product.id, 'Quantity in Cart (inCart):', inCart, 'Product Stock:', product.stock);
+    if (inCart >= product.stock) {
+      message.error('Stok produk tidak mencukupi');
       return;
     }
     addToCart(product);

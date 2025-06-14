@@ -1,9 +1,12 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { useProducts } from './ProductContext';
+import { message } from 'antd';
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
+  const { products } = useProducts();
 
   // Load cart from localStorage when component mounts
   useEffect(() => {
@@ -47,13 +50,25 @@ export const CartProvider = ({ children }) => {
   };
 
   const updateQuantity = (productId, quantity) => {
-    setCart(prevCart =>
-      prevCart.map(item =>
+    setCart(prevCart => {
+      const productInStock = products.find(p => p.id === productId);
+      if (!productInStock) {
+        console.warn(`Product with ID ${productId} not found in stock data.`);
+        return prevCart;
+      }
+      const maxQuantity = productInStock.stock;
+      const newQuantity = Math.min(Math.max(1, quantity), maxQuantity);
+
+      if (quantity > maxQuantity) {
+        message.error(`Stok ${productInStock.name} hanya tersedia ${maxQuantity} unit.`);
+      }
+
+      return prevCart.map(item =>
         item.id === productId
-          ? { ...item, quantity: Math.max(1, quantity) }
+          ? { ...item, quantity: newQuantity }
           : item
-      )
-    );
+      );
+    });
   };
 
   const clearCart = () => {

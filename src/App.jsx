@@ -13,6 +13,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
+import { ProductProvider } from './context/ProductContext';
 import { useAuth } from './context/AuthContext';
 
 // Protected Route Component
@@ -24,7 +25,7 @@ const ProtectedRoute = ({ children }) => {
   }
   
   if (!user) {
-    return <Navigate to="/login" state={{ from: window.location.pathname }} />;
+    return <Navigate to="/login" state={{ from: window.location.pathname }} replace />;
   }
   
   return children;
@@ -35,75 +36,77 @@ function App() {
     <ConfigProvider locale={idID}>
       <Router>
         <AuthProvider>
-          <CartProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-              <Route
-                path="/"
-                element={
-                  <Layout>
-                    <Home />
-                  </Layout>
-                }
-              />
-              <Route
-                path="/products"
-                element={
-                  <Layout>
-                    <Products />
-                  </Layout>
-                }
-              />
-              <Route
-                path="/faq"
-                element={
-                  <Layout>
-                    <FAQ />
-                  </Layout>
-                }
-              />
-              <Route
-                path="/playlist"
-                element={
-                  <Layout>
-                    <Playlist />
-                  </Layout>
-                }
-              />
-              <Route
-                path="/cart"
-                element={
-                  <Layout>
-                    <ProtectedRoute>
-                      <Cart />
-                    </ProtectedRoute>
-                  </Layout>
-                }
-              />
-            <Route 
-                path="/rental-form"
-              element={
-                  <Layout>
-                <ProtectedRoute>
-                      <RentalForm />
-                </ProtectedRoute>
-                  </Layout>
-              } 
-            />
-            <Route 
-                path="/rental-history"
-              element={
-                  <Layout>
-                <ProtectedRoute>
-                      <RentalHistory />
-                </ProtectedRoute>
-                  </Layout>
-              } 
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-          </CartProvider>
+          <ProductProvider>
+            <CartProvider>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route
+                  path="/"
+                  element={
+                    <Layout>
+                      <Home />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/products"
+                  element={
+                    <Layout>
+                      <Products />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/faq"
+                  element={
+                    <Layout>
+                      <FAQ />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/playlist"
+                  element={
+                    <Layout>
+                      <Playlist />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/cart"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <Cart />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/rental-form"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <RentalForm />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/rental-history"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <RentalHistory />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </CartProvider>
+          </ProductProvider>
         </AuthProvider>
       </Router>
     </ConfigProvider>

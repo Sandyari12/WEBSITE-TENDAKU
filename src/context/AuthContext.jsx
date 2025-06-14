@@ -82,6 +82,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     localStorage.removeItem('user');
     message.success('Logout berhasil!');
+    window.location.href = '/';
   };
 
   return (

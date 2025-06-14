@@ -11,7 +11,7 @@ import {
 } from 'antd';
 import { ShoppingCartOutlined } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
-import { products } from '../data/products';
+import { useProducts } from '../context/ProductContext';
 
 const { Title, Paragraph } = Typography;
 
@@ -19,6 +19,7 @@ const ProductDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { products, reduceStock } = useProducts();
 
   const product = products.find(p => p.id === parseInt(id));
 
@@ -28,6 +29,7 @@ const ProductDetail = () => {
       navigate('/login');
       return;
     }
+    reduceStock(product.id, 1);
     navigate(`/rent/${id}`);
   };
 

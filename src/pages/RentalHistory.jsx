@@ -70,8 +70,8 @@ const RentalHistory = () => {
       key: 'items',
       render: (items) => (
         <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-          {items.map((item, index) => (
-            <li key={index}>{item.name} (x{item.quantity})</li>
+          {Array.isArray(items) && items.map((item, index) => (
+            <li key={index}>{item?.name} (x{item?.quantity || 1})</li>
           ))}
         </ul>
       )
