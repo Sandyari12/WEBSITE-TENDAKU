@@ -11,6 +11,7 @@ import RentalHistory from './pages/RentalHistory';
 import Cart from './pages/Cart';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import OrderSuccess from './pages/OrderSuccess';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { ProductProvider } from './context/ProductContext';
@@ -41,6 +42,7 @@ function App() {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/order-success" element={<OrderSuccess />} />
                 <Route
                   path="/"
                   element={

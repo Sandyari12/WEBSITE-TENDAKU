@@ -98,8 +98,15 @@ const RentalHistory = () => {
     {
       title: 'Aksi',
       key: 'action',
+      align: 'center',
       render: (_, record) => (
         <Space size="middle">
+          <Button
+            type="primary"
+            onClick={() => navigate('/order-success', { state: { order: record } })}
+          >
+            Detail
+          </Button>
           <Button
             type="primary"
             danger

@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { ShoppingCartIcon, HomeIcon, CubeIcon, UserIcon } from '@heroicons/react/24/outline'
 
 function Navbar({ cartCount }) {
   return (
@@ -11,16 +10,13 @@ function Navbar({ cartCount }) {
           </Link>
           
           <div className="flex space-x-8">
-            <Link to="/" className="flex items-center text-gray-700 hover:text-blue-600">
-              <HomeIcon className="h-5 w-5 mr-1" />
+            <Link to="/" className="text-gray-700 hover:text-blue-600">
               Beranda
             </Link>
-            <Link to="/products" className="flex items-center text-gray-700 hover:text-blue-600">
-              <CubeIcon className="h-5 w-5 mr-1" />
+            <Link to="/products" className="text-gray-700 hover:text-blue-600">
               Peralatan
             </Link>
-            <Link to="/cart" className="flex items-center text-gray-700 hover:text-blue-600">
-              <ShoppingCartIcon className="h-5 w-5 mr-1" />
+            <Link to="/cart" className="text-gray-700 hover:text-blue-600">
               Keranjang
               {cartCount > 0 && (
                 <span className="ml-1 bg-blue-600 text-white rounded-full px-2 py-0.5 text-xs">
@@ -28,8 +24,7 @@ function Navbar({ cartCount }) {
                 </span>
               )}
             </Link>
-            <Link to="/admin" className="flex items-center text-gray-700 hover:text-blue-600">
-              <UserIcon className="h-5 w-5 mr-1" />
+            <Link to="/admin" className="text-gray-700 hover:text-blue-600">
               Admin
             </Link>
           </div>

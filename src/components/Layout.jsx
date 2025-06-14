@@ -23,39 +23,33 @@ const Layout = ({ children }) => {
   const menuItems = [
     {
       key: '/',
-      icon: <HomeOutlined />,
       label: <Link to="/">Beranda</Link>,
     },
     {
       key: '/products',
-      icon: <ShoppingOutlined />,
       label: <Link to="/products">Produk</Link>,
     },
     {
       key: '/faq',
-      icon: <QuestionCircleOutlined />,
       label: <Link to="/faq">FAQ</Link>,
     },
     {
       key: '/playlist',
-      icon: <PlayCircleOutlined />,
       label: <Link to="/playlist">Playlist</Link>,
     },
     {
       key: '/cart',
-      icon: <ShoppingCartOutlined />,
       label: <Link to="/cart">Keranjang</Link>,
     },
     {
       key: '/rental-history',
-      icon: <HistoryOutlined />,
       label: <Link to="/rental-history">Riwayat Sewa</Link>,
     },
   ];
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
   };
 
   return (

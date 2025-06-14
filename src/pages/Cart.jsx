@@ -20,12 +20,14 @@ const Cart = () => {
       title: 'Harga per Hari',
       dataIndex: 'price',
       key: 'price',
+      align: 'right',
       render: (price) => `Rp ${price.toLocaleString()}`,
     },
     {
       title: 'Jumlah',
       dataIndex: 'quantity',
       key: 'quantity',
+      align: 'center',
       render: (_, record) => (
         <InputNumber
           min={1}
@@ -38,6 +40,7 @@ const Cart = () => {
       title: 'Jumlah Hari',
       dataIndex: 'rentalDays',
       key: 'rentalDays',
+      align: 'center',
       render: (_, record) => (
         <InputNumber
           min={1}
@@ -49,6 +52,7 @@ const Cart = () => {
     {
       title: 'Subtotal',
       key: 'subtotal',
+      align: 'right',
       render: (_, record) => {
         const subtotal = record.price * (record.quantity || 1) * (record.rentalDays || 1);
         return `Rp ${subtotal.toLocaleString()}`;
@@ -57,6 +61,7 @@ const Cart = () => {
     {
       title: 'Aksi',
       key: 'action',
+      align: 'center',
       render: (_, record) => (
         <Button
           type="text"
@@ -87,13 +92,13 @@ const Cart = () => {
       // Clear cart
       setCart([]);
       message.success('Pesanan berhasil dibuat!');
-      navigate('/rental-history');
+      navigate('/order-success', { state: { order: newRental } });
       setLoading(false);
     }, 1500);
   };
 
     return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="flex items-center mb-6">
         <Button 
           icon={<ArrowLeftOutlined />} 
@@ -119,10 +124,10 @@ const Cart = () => {
             dataSource={cart}
             rowKey="id"
             pagination={false}
-            className="mb-8"
+            className="mb-12 shadow-md rounded-lg overflow-hidden"
           />
 
-          <div className="bg-gray-50 p-6 rounded-lg">
+          <div className="bg-white p-6 rounded-lg shadow-md mb-12">
             <h2 className="text-xl font-semibold mb-4">Informasi Pelanggan</h2>
             <Form
               form={form}
@@ -135,7 +140,7 @@ const Cart = () => {
                   label="Nama Lengkap"
                   rules={[{ required: true, message: 'Nama harus diisi' }]}
                 >
-                  <Input />
+                  <Input placeholder="Masukkan nama lengkap Anda"/>
                 </Form.Item>
                 <Form.Item
                   name="email"
@@ -145,37 +150,41 @@ const Cart = () => {
                     { type: 'email', message: 'Email tidak valid' }
                   ]}
                 >
-                  <Input />
+                  <Input placeholder="contoh@email.com"/>
                 </Form.Item>
                 <Form.Item
                   name="phone"
                   label="Nomor Telepon"
                   rules={[{ required: true, message: 'Nomor telepon harus diisi' }]}
                 >
-                  <Input />
+                  <Input placeholder="Contoh: 08123456789"/>
                 </Form.Item>
                 <Form.Item
                   name="address"
                   label="Alamat"
                   rules={[{ required: true, message: 'Alamat harus diisi' }]}
                 >
-                  <Input.TextArea rows={2} />
+                  <Input.TextArea rows={2} placeholder="Masukkan alamat lengkap Anda"/>
                 </Form.Item>
               </div>
 
-              <div className="mt-6 border-t pt-4">
+              <div className="mt-8 pt-6 border-t border-gray-200 bg-blue-50 p-6 rounded-lg">
                 <div className="flex justify-between items-center mb-4">
-                  <span className="text-lg font-semibold">Total Pembayaran:</span>
-                  <span className="text-xl font-bold text-blue-600">
+                  <span className="text-lg font-semibold text-blue-800">Total Pembayaran:</span>
+                  <span className="text-3xl font-bold text-blue-600">
                     Rp {getTotalPrice().toLocaleString()}
                   </span>
                 </div>
+                <p className="text-sm text-blue-700 text-center mb-6">
+                  Pembayaran dilakukan saat pengambilan barang. Anda tidak perlu melakukan pembayaran sekarang.
+                </p>
                 <Button
                   type="primary"
                   size="large"
                   block
                   htmlType="submit"
                   loading={loading}
+                  className="h-12 text-lg"
                 >
                   Checkout
                 </Button>
