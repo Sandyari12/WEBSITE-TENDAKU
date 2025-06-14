@@ -54,7 +54,7 @@ const Layout = ({ children }) => {
 
   return (
     <AntLayout className="min-h-screen">
-      <Header className="flex items-center justify-between px-6">
+      <Header className="flex items-center justify-between px-6" style={{ background: '#2C3E50' }}>
         <div className="flex items-center w-full">
           <div className="text-white text-xl font-bold mr-8">TendaKu</div>
           <Menu
@@ -69,7 +69,8 @@ const Layout = ({ children }) => {
               flexWrap: 'nowrap',
               justifyContent: 'center',
               minWidth: 0,
-              gap: '8px'
+              gap: '8px',
+              background: 'transparent',
             }}
             className="flex-1"
           />
@@ -85,7 +86,7 @@ const Layout = ({ children }) => {
                 type="text"
                 icon={<LogoutOutlined />}
                 onClick={handleLogout}
-                className="logout-button text-white hover:text-white"
+                className="logout-button text-white hover:text-white hover:bg-gray-700 focus:bg-transparent"
               >
                 Logout
               </Button>
@@ -94,7 +95,7 @@ const Layout = ({ children }) => {
             <Button
               type="primary"
               onClick={() => navigate('/login')}
-              className="login-button"
+              className="login-button bg-blue-600 hover:bg-blue-700"
             >
               Login
             </Button>

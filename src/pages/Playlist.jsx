@@ -8,6 +8,7 @@ import {
   Select,
   Space,
   message,
+  Tag,
 } from "antd";
 import {
   EditOutlined,
@@ -110,26 +111,24 @@ const Playlist = () => {
       );
   };
 
-
-const handleDelete = (id_play) => {
-  Modal.confirm({
-    title: "Hapus Playlist",
-    content: "Apakah yakin ingin menghapus playlist ini?",
-    okType: "danger",
-    okText: "Ya",
-    cancelText: "Batal",
-    async onOk() {
-      try {
-        await deleteData(`/api/playlist/${id_play}`);
-        message.success("Playlist berhasil dihapus");
-        fetchPlaylistData();
-      } catch {
-        message.error("Gagal menghapus playlist");
-      }
-    },
-  });
-};
-
+  const handleDelete = (id_play) => {
+    Modal.confirm({
+      title: "Hapus Playlist",
+      content: "Apakah yakin ingin menghapus playlist ini?",
+      okType: "danger",
+      okText: "Ya",
+      cancelText: "Batal",
+      async onOk() {
+        try {
+          await deleteData(`/api/playlist/${id_play}`);
+          message.success("Playlist berhasil dihapus");
+          fetchPlaylistData();
+        } catch {
+          message.error("Gagal menghapus playlist");
+        }
+      },
+    });
+  };
 
   const handleEdit = (playlist) => {
     setIdPlay(playlist.id_play);
@@ -149,80 +148,112 @@ const handleDelete = (id_play) => {
     setIdPlay(null);
   };
 
+  // Group playlists by genre
+  const groupedPlaylists = playlists.reduce((acc, playlist) => {
+    const genre = playlist.play_genre || "Uncategorized";
+    if (!acc[genre]) {
+      acc[genre] = [];
+    }
+    acc[genre].push(playlist);
+    return acc;
+  }, {});
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Playlist Video</h2>
-        <Button type="primary" onClick={showModal}>
-          Tambah Playlist
-        </Button>
+    <div className="min-h-screen bg-gray-100 pb-8">
+      {/* Hero Section */}
+      <div className="container mx-auto mt-8 relative h-64 flex items-center justify-center text-white rounded-lg shadow-xl overflow-hidden mb-28">
+        <img
+          src="https://i.pinimg.com/736x/6a/5e/cc/6a5ecc6e1a630ed430f3b427941200d2.jpg"
+          alt="PLAYLIST VIDEO TENDAKU"
+          className="absolute inset-0 w-full h-full object-cover z-0"
+        />
+        <div className="absolute inset-0 bg-black opacity-70 z-10"></div>
+        <div className="relative z-20 text-center px-4 md:px-8">
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-2 leading-tight drop-shadow-lg text-white" style={{ textShadow: '2px 2px 5px rgba(0,0,0,0.7)' }}>
+            PLAYLIST VIDEO TENDAKU
+          </h1>
+          <p className="text-lg md:text-xl max-w-2xl mx-auto mb-8 drop-shadow text-white" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
+            Jelajahi Kumpulan Video Playlist Tips and Trik untuk Pengalaman Camping Terbaikmu.
+          </p>
+          <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-white bg-opacity-20 text-white shadow-md mt-4">
+            🎥 {playlists.length} Video Tersedia
+          </span>
+        </div>
       </div>
 
-      <Modal
-        title={id_play ? "Edit Playlist" : "Tambah Playlist"}
-        open={isModalVisible}
-        onCancel={handleCancel}
-        footer={null}
-      >
-        <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          <Form.Item
-            name="play_name"
-            label="Judul"
-            rules={[{ required: true, message: "Masukkan judul" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="play_url"
-            label="URL Video"
-            rules={[
-              { required: true, message: "Masukkan URL" },
-              { type: "url", message: "URL tidak valid" },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="play_thumbnail"
-            label="URL Thumbnail"
-            rules={[
-              { required: true, message: "Masukkan URL thumbnail" },
-              { type: "url", message: "URL tidak valid" },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="play_genre"
-            label="Genre"
-            rules={[{ required: true, message: "Pilih genre" }]}
-          >
-            <Select placeholder="Pilih genre">
-              <Option value="music">Music</Option>
-              <Option value="education">Education</Option>
-              <Option value="movie">Movie</Option>
-              <Option value="others">Others</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item
-            name="play_description"
-            label="Deskripsi"
-            rules={[{ required: true, message: "Masukkan deskripsi" }]}
-          >
-            <TextArea rows={3} />
-          </Form.Item>
-          <Form.Item className="text-right">
-            <Space>
-              <Button onClick={handleCancel}>Batal</Button>
-              <Button type="primary" htmlType="submit">
-                {id_play ? "Update" : "Simpan"}
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
+      {/* Main content area below hero */}
+      <div className="container mx-auto px-4 py-8 mt-28">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Semua Playlist</h2>
+          <Button type="primary" size="large" className="bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md" onClick={showModal}>
+            Tambah Playlist
+          </Button>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        <Modal
+          title={id_play ? "Edit Playlist" : "Tambah Playlist"}
+          open={isModalVisible}
+          onCancel={handleCancel}
+          footer={null}
+        >
+          <Form form={form} layout="vertical" onFinish={handleSubmit}>
+            <Form.Item
+              name="play_name"
+              label="Judul"
+              rules={[{ required: true, message: "Masukkan judul" }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="play_url"
+              label="URL Video"
+              rules={[
+                { required: true, message: "Masukkan URL" },
+                { type: "url", message: "URL tidak valid" },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="play_thumbnail"
+              label="URL Thumbnail"
+              rules={[
+                { required: true, message: "Masukkan URL thumbnail" },
+                { type: "url", message: "URL tidak valid" },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="play_genre"
+              label="Genre"
+              rules={[{ required: true, message: "Pilih genre" }]}
+            >
+              <Select placeholder="Pilih genre">
+                <Option value="music">Music</Option>
+                <Option value="education">Education</Option>
+                <Option value="movie">Movie</Option>
+                <Option value="others">Others</Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+              name="play_description"
+              label="Deskripsi"
+              rules={[{ required: true, message: "Masukkan deskripsi" }]}
+            >
+              <TextArea rows={3} />
+            </Form.Item>
+            <Form.Item className="text-right">
+              <Space>
+                <Button onClick={handleCancel}>Batal</Button>
+                <Button type="primary" htmlType="submit">
+                  {id_play ? "Update" : "Simpan"}
+                </Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        </Modal>
+
         {isLoading ? (
           <div className="col-span-full text-center py-8">Loading...</div>
         ) : playlists.length === 0 ? (
@@ -230,53 +261,63 @@ const handleDelete = (id_play) => {
             Tidak ada data playlist.
           </div>
         ) : (
-          playlists.map((playlist) => (
-            <Card
-              key={playlist.id_play}
-              hoverable
-              cover={
-                <img
-                  src={playlist.play_thumbnail}
-                  alt={playlist.play_name}
-                  className="h-48 object-cover"
-                />
-              }
-              actions={[
-                <a
-                  key="watch"
-                  href={playlist.play_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <PlayCircleOutlined /> Tonton
-                </a>,
-                <Button
-                  key="edit"
-                  icon={<EditOutlined />}
-                  type="text"
-                  onClick={() => handleEdit(playlist)}
-                />,
-                <Button
-                  key="delete"
-                  icon={<DeleteOutlined />}
-                  type="text"
-                  danger
-                  onClick={() => handleDelete(playlist.id_play)}
-                />,
-              ]}
-            >
-              <Card.Meta
-                title={playlist.play_name}
-                description={
-                  <>
-                    <p className="mb-2">{playlist.play_description}</p>
-                    <span className="text-xs text-gray-500">
-                      Genre: {playlist.play_genre}
-                    </span>
-                  </>
-                }
-              />
-            </Card>
+          Object.keys(groupedPlaylists).map((genre) => (
+            <div key={genre} className="mb-10">
+              <h3 className="text-2xl font-bold text-gray-800 mb-6 mt-8 pb-2 flex items-center">
+                <PlayCircleOutlined className="mr-2 text-blue-500" />
+                {genre}
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {groupedPlaylists[genre].map((playlist) => (
+                  <Card
+                    key={playlist.id_play}
+                    hoverable
+                    className="rounded-lg shadow-md overflow-hidden"
+                    cover={
+                      <a href={playlist.play_url} target="_blank" rel="noopener noreferrer" className="block relative">
+                        <img
+                          src={playlist.play_thumbnail}
+                          alt={playlist.play_name}
+                          className="w-full h-48 object-cover"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 opacity-0 hover:opacity-100 transition-opacity duration-300">
+                          <PlayCircleOutlined className="text-white text-5xl" />
+                        </div>
+                      </a>
+                    }
+                    actions={[
+                      <Button
+                        key="edit"
+                        icon={<EditOutlined />}
+                        type="text"
+                        onClick={() => handleEdit(playlist)}
+                      >
+                        Edit
+                      </Button>,
+                      <Button
+                        key="delete"
+                        icon={<DeleteOutlined />}
+                        type="text"
+                        danger
+                        onClick={() => handleDelete(playlist.id_play)}
+                      >
+                        Hapus
+                      </Button>,
+                    ]}
+                  >
+                    <Card.Meta
+                      title={<h4 className="text-lg font-semibold line-clamp-1">{playlist.play_name}</h4>}
+                      description={
+                        <div className="flex flex-col">
+                          <p className="text-gray-600 text-sm line-clamp-2 mb-2">{playlist.play_description}</p>
+                          <Tag color="blue" className="rounded-full text-xs px-2 py-0.5 font-semibold self-start">{playlist.play_genre.toUpperCase()}</Tag>
+                        </div>
+                      }
+                    />
+                  </Card>
+                ))}
+              </div>
+            </div>
           ))
         )}
       </div>

@@ -239,3 +239,25 @@ button {
     font-size: 16px !important;
   }
 }
+
+/* Ant Design overrides */
+
+/* Navbar selected item underline */
+.ant-menu-dark.ant-menu-horizontal > .ant-menu-item-selected::after,
+.ant-menu-dark.ant-menu-horizontal > .ant-menu-item-active::after {
+  border-bottom: 2px solid #1890ff !important; /* Blue underline */
+}
+
+.ant-menu-dark.ant-menu-horizontal > .ant-menu-item-selected,
+.ant-menu-dark.ant-menu-horizontal > .ant-menu-item-active {
+  background-color: transparent !important;
+}
+
+.ant-menu-dark .ant-menu-item-selected .ant-menu-title-content,
+.ant-menu-dark .ant-menu-item-active .ant-menu-title-content {
+  color: white !important;
+}
+
+.ant-menu-dark .ant-menu-item:hover .ant-menu-title-content {
+  color: #a0d911 !important; /* Lighter green on hover */
+}
