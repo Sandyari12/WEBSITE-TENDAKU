@@ -14,6 +14,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   PlayCircleOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 import { getData, createData, updateData, deleteData } from "../utils/api";
 
@@ -173,7 +174,7 @@ const Playlist = () => {
             PLAYLIST VIDEO TENDAKU
           </h1>
           <p className="text-lg md:text-xl max-w-2xl mx-auto mb-8 drop-shadow text-white" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.5)' }}>
-            Jelajahi Kumpulan Video Playlist Tips and Trik untuk Pengalaman Camping Terbaikmu.
+            Bagikan Pengalaman Camping Anda dan Temukan Playlist Inspiratif dari Sesama Pengguna TendaKu!
           </p>
           <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-white bg-opacity-20 text-white shadow-md mt-4">
             🎥 {playlists.length} Video Tersedia
@@ -183,15 +184,10 @@ const Playlist = () => {
 
       {/* Main content area below hero */}
       <div className="container mx-auto px-4 py-8 mt-28">
-        <div className="flex justify-between items-center mb-6 gap-x-4">
+        <div className="flex justify-between items-center mb-6 mt-8">
           <h2 className="text-2xl font-bold text-gray-800">Semua Playlist</h2>
-          <Button
-          type="primary"
-          size="large"
-          className="mt-5 bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md"
-           onClick={showModal}
-        >
-          Tambah Playlist
+          <Button type="primary" size="large" className="bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md" onClick={showModal}>
+            <PlusOutlined /> Tambah Playlist
           </Button>
         </div>
 
