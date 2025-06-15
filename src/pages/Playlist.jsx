@@ -236,6 +236,7 @@ const Playlist = () => {
             >
               <Select placeholder="Pilih genre">
                 <Option value="music">Music</Option>
+                <Option value="song">Song</Option>
                 <Option value="education">Education</Option>
                 <Option value="movie">Movie</Option>
                 <Option value="others">Others</Option>
