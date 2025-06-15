@@ -279,7 +279,7 @@ const Playlist = () => {
                     hoverable
                     className="rounded-lg shadow-md overflow-hidden"
                     cover={
-                      <a href={playlist.play_url} target="_blank" rel="noopener noreferrer" className="block relative">
+                      <a href={playlist.play_url} target="_blank" rel="noopener noreferrer" className="block relative active:scale-110 active:shadow-3xl hover:scale-105 hover:shadow-2xl transition-transform duration-200">
                         <img
                           src={playlist.play_thumbnail}
                           alt={playlist.play_name}
