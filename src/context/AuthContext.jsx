@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
         id: Date.now(),
         name: email.split('@')[0], // Menggunakan bagian sebelum @ sebagai nama
         email: email,
-        role: 'user'
+        role: email.toLowerCase() === 'admin@tendaku.com' ? 'admin' : 'user'
       };
       
       setUser(userData);
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }) => {
         id: Date.now(),
         name: name,
         email: email,
-        role: 'user'
+        role: email.toLowerCase() === 'admin@tendaku.com' ? 'admin' : 'user'
       };
       
       setUser(userData);
@@ -85,6 +85,20 @@ export const AuthProvider = ({ children }) => {
     window.location.href = '/';
   };
 
+  const updateProfile = ({ name, password, photo }) => {
+    setUser(prev => {
+      const updatedUser = {
+        ...prev,
+        name: name !== undefined ? name : prev.name,
+        password: password !== undefined ? password : prev.password,
+        photo: photo !== undefined ? photo : prev.photo,
+      };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      return updatedUser;
+    });
+    message.success('Profil berhasil diperbarui!');
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -92,7 +106,8 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         register,
-        logout
+        logout,
+        updateProfile
       }}
     >
       {children}

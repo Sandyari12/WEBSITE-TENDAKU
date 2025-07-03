@@ -13,11 +13,15 @@ const Login = () => {
   const [form] = Form.useForm();
 
   const onFinish = async (values) => {
-    const user = await login(values.email, values.password);
-    if (user) {
-      // Redirect ke halaman yang dituju atau home
-      const from = location.state?.from?.pathname || '/';
-      navigate(from || '/');
+    const result = await login(values.email, values.password);
+    if (result && result.success) {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user?.role === 'admin') {
+        navigate('/admin');
+      } else {
+        const from = location.state?.from?.pathname || '/';
+        navigate(from || '/');
+      }
     } else {
       message.error('Email atau password salah!');
     }

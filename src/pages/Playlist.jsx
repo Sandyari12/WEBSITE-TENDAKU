@@ -270,11 +270,11 @@ const Playlist = () => {
                 {genre}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {groupedPlaylists[genre].map((playlist) => (
+                {groupedPlaylists[genre].map((playlist, idx) => (
                   <Card
                     key={playlist.id_play}
                     hoverable
-                    className="rounded-lg shadow-md overflow-hidden"
+                    className={`rounded-lg shadow-md overflow-hidden hover-lift floating stagger-${(idx%5)+1}`}
                     cover={
                       <a href={playlist.play_url} target="_blank" rel="noopener noreferrer" className="block relative active:scale-110 active:shadow-3xl hover:scale-105 hover:shadow-2xl transition-transform duration-200">
                         <img

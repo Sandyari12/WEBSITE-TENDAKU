@@ -40,3 +40,30 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Animasi hover-lift: mengangkat kartu saat hover */
+.hover-lift {
+  transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), box-shadow 0.25s;
+}
+.hover-lift:hover {
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  z-index: 2;
+}
+
+/* Animasi floating: kartu melayang perlahan naik-turun */
+.floating {
+  animation: floating 3s ease-in-out infinite;
+}
+@keyframes floating {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+
+/* Staggered animation delays untuk efek masuk bertahap */
+.stagger-1 { animation-delay: 0.1s !important; }
+.stagger-2 { animation-delay: 0.2s !important; }
+.stagger-3 { animation-delay: 0.3s !important; }
+.stagger-4 { animation-delay: 0.4s !important; }
+.stagger-5 { animation-delay: 0.5s !important; }

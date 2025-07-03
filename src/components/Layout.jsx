@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout as AntLayout, Menu, Button, Avatar } from 'antd';
+import { Layout as AntLayout, Menu, Button, Avatar, Dropdown, Menu as AntMenu } from 'antd';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   HomeOutlined,
@@ -30,10 +30,6 @@ const Layout = ({ children }) => {
       label: <Link to="/products">Produk</Link>,
     },
     {
-      key: '/faq',
-      label: <Link to="/faq">FAQ</Link>,
-    },
-    {
       key: '/playlist',
       label: <Link to="/playlist">Playlist</Link>,
     },
@@ -45,12 +41,31 @@ const Layout = ({ children }) => {
       key: '/rental-history',
       label: <Link to="/rental-history">Riwayat Sewa</Link>,
     },
+    // Only show admin menu for admin users
+    ...(user?.role === 'admin' ? [
+      {
+        key: '/admin',
+        label: <Link to="/admin">Admin</Link>,
+      }
+    ] : []),
   ];
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
+
+  // Dropdown menu for profile
+  const profileMenu = (
+    <AntMenu>
+      <AntMenu.Item key="profile" onClick={() => navigate('/profile')}>
+        Profil
+      </AntMenu.Item>
+      <AntMenu.Item key="logout" onClick={handleLogout} danger>
+        Logout
+      </AntMenu.Item>
+    </AntMenu>
+  );
 
   return (
     <AntLayout className="min-h-screen">
@@ -78,18 +93,12 @@ const Layout = ({ children }) => {
         <div className="flex items-center gap-4 ml-4">
           {user ? (
             <>
-              <div className="text-white flex items-center gap-2">
-                <Avatar icon={<UserOutlined />} />
+              <Dropdown overlay={profileMenu} placement="bottomRight" trigger={["click"]}>
+                <div className="text-white flex items-center gap-2 cursor-pointer select-none">
+                  <Avatar src={user.photo} icon={!user.photo && <UserOutlined />} />
                 <span>{user.name}</span>
               </div>
-              <Button
-                type="text"
-                icon={<LogoutOutlined />}
-                onClick={handleLogout}
-                className="logout-button text-white hover:text-white hover:bg-gray-700 focus:bg-transparent"
-              >
-                Logout
-              </Button>
+              </Dropdown>
             </>
           ) : (
             <Button

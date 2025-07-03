@@ -1,25 +1,10 @@
 import { useState } from 'react'
+import { useProducts } from '../context/ProductContext'
+import { Drawer, Button as AntButton, message, Modal } from 'antd'
 
 function Admin() {
   const [activeTab, setActiveTab] = useState('products')
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      name: 'Tenda Dome 2 Orang',
-      category: 'tenda',
-      price: 50000,
-      stock: 5,
-      image: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'
-    },
-    {
-      id: 2,
-      name: 'Kompor Portable',
-      category: 'peralatan-masak',
-      price: 30000,
-      stock: 8,
-      image: 'https://images.unsplash.com/photo-1514326640560-7d063ef2aed5?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'
-    }
-  ])
+  const { products, addProduct, editProduct, deleteProduct } = useProducts()
 
   const [orders, setOrders] = useState([
     {
@@ -45,25 +30,64 @@ function Admin() {
     category: '',
     price: '',
     stock: '',
-    image: ''
+    image: '',
+    description: '',
+    additionalInfo: '',
+  })
+
+  const [editId, setEditId] = useState(null)
+  const [editData, setEditData] = useState({})
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
+  const [playlists, setPlaylists] = useState([
+    {
+      id: 1,
+      play_name: 'Cara Setup Tenda Dome',
+      play_url: 'https://www.youtube.com/watch?v=example1',
+      play_thumbnail: 'https://example.com/thumbnail1.jpg',
+      play_genre: 'education',
+      play_description: 'Video tutorial lengkap cara setup tenda dome dengan mudah'
+    },
+    {
+      id: 2,
+      play_name: 'Tips Camping Aman',
+      play_url: 'https://www.youtube.com/watch?v=example2',
+      play_thumbnail: 'https://example.com/thumbnail2.jpg',
+      play_genre: 'education',
+      play_description: 'Panduan keamanan saat camping di alam terbuka'
+    }
+  ])
+
+  const [newPlaylist, setNewPlaylist] = useState({
+    play_name: '',
+    play_url: '',
+    play_thumbnail: '',
+    play_genre: '',
+    play_description: ''
   })
 
   const handleAddProduct = (e) => {
     e.preventDefault()
     const product = {
-      id: products.length + 1,
+      id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
       ...newProduct,
       price: parseInt(newProduct.price),
-      stock: parseInt(newProduct.stock)
+      stock: parseInt(newProduct.stock),
+      description: newProduct.description || '',
+      additionalInfo: newProduct.additionalInfo || '',
     }
-    setProducts([...products, product])
+    addProduct(product)
     setNewProduct({
       name: '',
       category: '',
       price: '',
       stock: '',
-      image: ''
+      image: '',
+      description: '',
+      additionalInfo: '',
     })
+    setDrawerOpen(false)
+    message.success('Produk berhasil ditambahkan!')
   }
 
   const handleUpdateOrderStatus = (orderId, newStatus) => {
@@ -72,27 +96,134 @@ function Admin() {
     ))
   }
 
+  const handleEditClick = (product) => {
+    setEditId(product.id)
+    setEditData({ ...product })
+  }
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target
+    setEditData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleEditSubmit = (e) => {
+    e.preventDefault()
+    editProduct({
+      ...editData,
+      price: parseInt(editData.price),
+      stock: parseInt(editData.stock),
+    })
+    setEditId(null)
+    setEditData({})
+    message.success('Produk berhasil diubah!')
+  }
+
+  const handleDelete = (id) => {
+    Modal.confirm({
+      title: 'Konfirmasi Hapus Produk',
+      content: 'Yakin ingin menghapus produk ini?',
+      okText: 'Hapus',
+      okType: 'danger',
+      cancelText: 'Batal',
+      onOk() {
+        deleteProduct(id);
+        message.success('Produk berhasil dihapus!');
+      },
+    });
+  }
+
+  const handleAddPlaylist = (e) => {
+    e.preventDefault();
+    const playlist = {
+      id: playlists.length > 0 ? Math.max(...playlists.map(p => p.id)) + 1 : 1,
+      ...newPlaylist,
+    };
+    setPlaylists([...playlists, playlist]);
+    setNewPlaylist({
+      play_name: '',
+      play_url: '',
+      play_thumbnail: '',
+      play_genre: '',
+      play_description: ''
+    });
+    message.success('Playlist berhasil ditambahkan!');
+  };
+
+  const handleDeletePlaylist = (id) => {
+    Modal.confirm({
+      title: 'Konfirmasi Hapus Playlist',
+      content: 'Yakin ingin menghapus playlist ini?',
+      okText: 'Hapus',
+      okType: 'danger',
+      cancelText: 'Batal',
+      onOk() {
+        setPlaylists(playlists.filter(p => p.id !== id));
+        message.success('Playlist berhasil dihapus!');
+      },
+    });
+  };
+
+  // Dummy statistics for cards
+  const stats = [
+    { label: 'Total Produk', value: products.length, color: 'text-blue-600' },
+    { label: 'Pesanan Selesai', value: orders.filter(o => o.status === 'completed').length, color: 'text-green-600' },
+    { label: 'Pesanan Menunggu', value: orders.filter(o => o.status === 'pending').length, color: 'text-yellow-600' },
+    { label: 'Pesanan Dibatalkan', value: 0, color: 'text-red-600' },
+  ];
+
   return (
     <div className="max-w-6xl mx-auto">
-      <h2 className="text-2xl font-bold mb-8">Dashboard Admin</h2>
+      {/* Admin Header */}
+      <div className="bg-[#2C3E50] rounded-xl p-6 mb-8 flex items-center justify-between shadow-lg">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+          <p className="text-blue-100 mt-1">Kelola produk & pesanan dengan mudah</p>
+        </div>
+        <div className="bg-white rounded-full p-3 shadow">
+          <svg className="w-8 h-8 text-[#2C3E50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0-1.104.896-2 2-2s2 .896 2 2-.896 2-2 2-2-.896-2-2-2z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19c-4.418 0-8-1.79-8-4V7a4 4 0 014-4h8a4 4 0 014 4v8c0 2.21-3.582 4-8 4z" />
+          </svg>
+        </div>
+      </div>
 
-      {/* Tabs */}
+      {/* Statistic Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        {stats.map((stat, idx) => (
+          <div key={idx} className="bg-white rounded-xl p-4 shadow border border-[#2C3E50] flex flex-col items-center">
+            <span className="text-2xl font-bold text-[#2C3E50]">{stat.value}</span>
+            <span className="text-gray-500">{stat.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Modern Tabs */}
       <div className="flex gap-4 mb-8">
         <button
-          className={`px-4 py-2 rounded-lg ${
+          className={`px-6 py-2 rounded-full font-semibold transition ${
             activeTab === 'products'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-[#2C3E50] text-white shadow'
+              : 'bg-gray-100 text-[#2C3E50] hover:bg-blue-100'
           }`}
           onClick={() => setActiveTab('products')}
         >
           Kelola Peralatan
         </button>
         <button
-          className={`px-4 py-2 rounded-lg ${
+          className={`px-6 py-2 rounded-full font-semibold transition ${
+            activeTab === 'playlists'
+              ? 'bg-[#2C3E50] text-white shadow'
+              : 'bg-gray-100 text-[#2C3E50] hover:bg-blue-100'
+          }`}
+          onClick={() => setActiveTab('playlists')}
+        >
+          Kelola Playlist
+        </button>
+        <button
+          className={`px-6 py-2 rounded-full font-semibold transition ${
             activeTab === 'orders'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-[#2C3E50] text-white shadow'
+              : 'bg-gray-100 text-[#2C3E50] hover:bg-blue-100'
           }`}
           onClick={() => setActiveTab('orders')}
         >
@@ -103,10 +234,19 @@ function Admin() {
       {/* Products Management */}
       {activeTab === 'products' && (
         <div className="space-y-8">
-          {/* Add Product Form */}
-          <div className="bg-white rounded-xl p-6 shadow-lg">
-            <h3 className="text-xl font-semibold mb-4">Tambah Peralatan Baru</h3>
-            <form onSubmit={handleAddProduct} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Add Product Button */}
+          <AntButton type="primary" className="mb-4" style={{ backgroundColor: '#2C3E50', borderColor: '#2C3E50' }} onClick={() => setDrawerOpen(true)}>
+            Tambah Peralatan
+          </AntButton>
+          {/* Drawer for Add Product Form */}
+          <Drawer
+            title={<span style={{ color: '#2C3E50' }}>Tambah Peralatan Baru</span>}
+            placement="right"
+            onClose={() => setDrawerOpen(false)}
+            open={drawerOpen}
+            width={400}
+          >
+            <form onSubmit={handleAddProduct} className="grid grid-cols-1 gap-4">
               <div>
                 <label className="block text-sm text-gray-600 mb-1">
                   Nama Peralatan
@@ -130,10 +270,12 @@ function Admin() {
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Pilih Kategori</option>
-                  <option value="tenda">Tenda</option>
-                  <option value="peralatan-masak">Peralatan Masak</option>
+                  <option value="tent">Tenda</option>
+                  <option value="cooking">Peralatan Masak</option>
                   <option value="sleeping-bag">Sleeping Bag</option>
                   <option value="peralatan-penerangan">Peralatan Penerangan</option>
+                  <option value="hiking">Peralatan Hiking</option>
+                  <option value="backpack">Ransel</option>
                 </select>
               </div>
               <div>
@@ -160,7 +302,7 @@ function Admin() {
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div className="md:col-span-2">
+              <div>
                 <label className="block text-sm text-gray-600 mb-1">
                   URL Gambar
                 </label>
@@ -172,7 +314,31 @@ function Admin() {
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <div className="md:col-span-2">
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Deskripsi Produk
+                </label>
+                <textarea
+                  value={newProduct.description}
+                  onChange={(e) => setNewProduct(prev => ({ ...prev, description: e.target.value }))}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={2}
+                  placeholder="Deskripsi singkat produk"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Info Tambahan
+                </label>
+                <textarea
+                  value={newProduct.additionalInfo}
+                  onChange={(e) => setNewProduct(prev => ({ ...prev, additionalInfo: e.target.value }))}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={2}
+                  placeholder="Info tambahan (opsional)"
+                />
+              </div>
+              <div>
                 <button
                   type="submit"
                   className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
@@ -181,8 +347,7 @@ function Admin() {
                 </button>
               </div>
             </form>
-          </div>
-
+          </Drawer>
           {/* Products List */}
           <div className="bg-white rounded-xl p-6 shadow-lg">
             <h3 className="text-xl font-semibold mb-4">Daftar Peralatan</h3>
@@ -200,15 +365,192 @@ function Admin() {
                 <tbody>
                   {products.map(product => (
                     <tr key={product.id} className="border-b">
+                      {editId === product.id ? (
+                        <>
+                          <td className="py-3 px-4">
+                            <input
+                              name="name"
+                              value={editData.name}
+                              onChange={handleEditChange}
+                              className="w-full px-2 py-1 border rounded"
+                            />
+                          </td>
+                          <td className="py-3 px-4">
+                            <select
+                              name="category"
+                              value={editData.category}
+                              onChange={handleEditChange}
+                              className="w-full px-2 py-1 border rounded"
+                            >
+                              <option value="tent">Tenda</option>
+                              <option value="cooking">Peralatan Masak</option>
+                              <option value="sleeping-bag">Sleeping Bag</option>
+                              <option value="peralatan-penerangan">Peralatan Penerangan</option>
+                              <option value="hiking">Peralatan Hiking</option>
+                              <option value="backpack">Ransel</option>
+                            </select>
+                          </td>
+                          <td className="py-3 px-4">
+                            <input
+                              name="price"
+                              type="number"
+                              value={editData.price}
+                              onChange={handleEditChange}
+                              className="w-full px-2 py-1 border rounded"
+                            />
+                          </td>
+                          <td className="py-3 px-4">
+                            <input
+                              name="stock"
+                              type="number"
+                              value={editData.stock}
+                              onChange={handleEditChange}
+                              className="w-full px-2 py-1 border rounded"
+                            />
+                          </td>
+                          <td className="py-3 px-4">
+                            <button onClick={handleEditSubmit} className="text-green-600 hover:text-green-800 mr-2">Simpan</button>
+                            <button onClick={() => setEditId(null)} className="text-gray-600 hover:text-gray-800">Batal</button>
+                          </td>
+                        </>
+                      ) : (
+                        <>
                       <td className="py-3 px-4">{product.name}</td>
                       <td className="py-3 px-4">{product.category}</td>
                       <td className="py-3 px-4">Rp {product.price.toLocaleString()}</td>
                       <td className="py-3 px-4">{product.stock}</td>
                       <td className="py-3 px-4">
-                        <button className="text-blue-600 hover:text-blue-700 mr-2">
-                          Edit
+                            <button onClick={() => handleEditClick(product)} className="text-blue-600 hover:text-blue-700 mr-2">Edit</button>
+                            <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:text-red-700">Hapus</button>
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Playlists Management */}
+      {activeTab === 'playlists' && (
+        <div className="space-y-8">
+          {/* Add Playlist Button */}
+          <AntButton type="primary" className="mb-4" style={{ backgroundColor: '#2C3E50', borderColor: '#2C3E50' }} onClick={() => setDrawerOpen(true)}>
+            Tambah Playlist
+          </AntButton>
+          {/* Drawer for Add Playlist Form */}
+          <Drawer
+            title={<span style={{ color: '#2C3E50' }}>Tambah Playlist Baru</span>}
+            placement="right"
+            onClose={() => setDrawerOpen(false)}
+            open={drawerOpen}
+            width={400}
+          >
+            <form onSubmit={handleAddPlaylist} className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Judul Playlist
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newPlaylist.play_name}
+                  onChange={(e) => setNewPlaylist(prev => ({ ...prev, play_name: e.target.value }))}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  URL Video
+                </label>
+                <input
+                  type="url"
+                  required
+                  value={newPlaylist.play_url}
+                  onChange={(e) => setNewPlaylist(prev => ({ ...prev, play_url: e.target.value }))}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  URL Thumbnail
+                </label>
+                <input
+                  type="url"
+                  required
+                  value={newPlaylist.play_thumbnail}
+                  onChange={(e) => setNewPlaylist(prev => ({ ...prev, play_thumbnail: e.target.value }))}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Genre
+                </label>
+                <select
+                  required
+                  value={newPlaylist.play_genre}
+                  onChange={(e) => setNewPlaylist(prev => ({ ...prev, play_genre: e.target.value }))}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Pilih Genre</option>
+                  <option value="music">Music</option>
+                  <option value="song">Song</option>
+                  <option value="education">Education</option>
+                  <option value="movie">Movie</option>
+                  <option value="others">Others</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Deskripsi
+                </label>
+                <textarea
+                  required
+                  value={newPlaylist.play_description}
+                  onChange={(e) => setNewPlaylist(prev => ({ ...prev, play_description: e.target.value }))}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <button
+                  type="submit"
+                  className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+                >
+                  Tambah Playlist
                         </button>
-                        <button className="text-red-600 hover:text-red-700">
+              </div>
+            </form>
+          </Drawer>
+          {/* Playlists List */}
+          <div className="bg-white rounded-xl p-6 shadow-lg">
+            <h3 className="text-xl font-semibold mb-4">Daftar Playlist</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-4">Judul</th>
+                    <th className="text-left py-3 px-4">Genre</th>
+                    <th className="text-left py-3 px-4">URL Video</th>
+                    <th className="text-left py-3 px-4">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {playlists.map(playlist => (
+                    <tr key={playlist.id} className="border-b">
+                      <td className="py-3 px-4">{playlist.play_name}</td>
+                      <td className="py-3 px-4">{playlist.play_genre}</td>
+                      <td className="py-3 px-4">
+                        <a href={playlist.play_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
+                          Lihat Video
+                        </a>
+                      </td>
+                      <td className="py-3 px-4">
+                        <button onClick={() => handleDeletePlaylist(playlist.id)} className="text-red-600 hover:text-red-700">
                           Hapus
                         </button>
                       </td>
@@ -272,6 +614,11 @@ function Admin() {
           </div>
         </div>
       )}
+
+      {/* Admin Footer */}
+      <footer className="mt-12 text-center text-[#2C3E50] text-sm">
+        &copy; {new Date().getFullYear()} TendaKu Admin. All rights reserved.
+      </footer>
     </div>
   )
 }

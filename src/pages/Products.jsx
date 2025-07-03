@@ -79,10 +79,11 @@ const Products = () => {
 
       {/* Products Grid */}
       <Row gutter={[24, 24]}>
-        {filteredProducts.map(product => (
+        {filteredProducts.map((product, idx) => (
           <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
             <Card
               hoverable
+              className={`hover-lift floating stagger-${(idx%5)+1}`}
               style={{ height: '100%' }}
               cover={
                 <img

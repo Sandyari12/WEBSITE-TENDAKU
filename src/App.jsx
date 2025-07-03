@@ -16,6 +16,9 @@ import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { ProductProvider } from './context/ProductContext';
 import { useAuth } from './context/AuthContext';
+import Admin from './pages/Admin';
+import Profile from './pages/Profile';
+import AdminLayout from './components/AdminLayout';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -29,6 +32,14 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" state={{ from: window.location.pathname }} replace />;
   }
   
+  return children;
+};
+
+// Admin-only Protected Route
+const AdminRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <div>Loading...</div>;
+  if (!user || user.role !== 'admin') return <Navigate to="/" replace />;
   return children;
 };
 
@@ -101,6 +112,26 @@ function App() {
                     <Layout>
                       <ProtectedRoute>
                         <RentalHistory />
+                      </ProtectedRoute>
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/admin"
+                  element={
+                    <AdminRoute>
+                      <AdminLayout>
+                        <Admin />
+                      </AdminLayout>
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <Layout>
+                      <ProtectedRoute>
+                        <Profile />
                       </ProtectedRoute>
                     </Layout>
                   }
