@@ -21,14 +21,14 @@ import { getData, createData, updateData, deleteData } from "../utils/api";
 const { TextArea } = Input;
 const { Option } = Select;
 
-const GROUP_ID = 44;
+// const GROUP_ID = 44;
 
 const Playlist = () => {
   const [form] = Form.useForm();
   const [playlists, setPlaylists] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [id_play, setIdPlay] = useState(null);
+  const [id, setIdPlay] = useState(null);
 
   useEffect(() => {
     fetchPlaylistData();
@@ -36,7 +36,7 @@ const Playlist = () => {
 
   const fetchPlaylistData = () => {
     setIsLoading(true);
-    getData(`/api/playlist/${GROUP_ID}`)
+    getData(`/api/v1/playlist/`)
       .then((response) => {
         if (response?.datas) setPlaylists(response.datas);
         else showNotification("error", "Gagal", "Data tidak ditemukan");
@@ -62,17 +62,17 @@ const Playlist = () => {
         formData.append("play_genre", values.play_genre);
         formData.append("play_description", values.play_description);
 
-        const isEdit = id_play !== null;
+        const isEdit = id !== null;
         const apiUrl = isEdit
-          ? `/api/playlist/update/${id_play}`
-          : `/api/playlist/${GROUP_ID}`;
+          ? `/api/v1/playlist/${id}`
+          : `/api/v1/playlist/`;
         const apiMethod = isEdit ? updateData : createData;
 
         apiMethod(apiUrl, formData)
           .then((response) => {
             if (
               response?.message === "Inserted" ||
-              response?.message === "Updated" ||
+              response?.message === "updated" ||
               (typeof response?.message === "string" && response.message.toLowerCase().includes("ok")) ||
               response?.status === 200
             ) {
@@ -112,7 +112,7 @@ const Playlist = () => {
       );
   };
 
-  const handleDelete = (id_play) => {
+  const handleDelete = (id) => {
     Modal.confirm({
       title: "Hapus Playlist",
       content: "Apakah yakin ingin menghapus playlist ini?",
@@ -121,7 +121,7 @@ const Playlist = () => {
       cancelText: "Batal",
       async onOk() {
         try {
-          await deleteData(`/api/playlist/${id_play}`);
+          await deleteData(`/api/v1/playlist/${id}`);
           message.success("Playlist berhasil dihapus");
           fetchPlaylistData();
         } catch {
@@ -132,7 +132,7 @@ const Playlist = () => {
   };
 
   const handleEdit = (playlist) => {
-    setIdPlay(playlist.id_play);
+    setIdPlay(playlist.id);
     form.setFieldsValue(playlist);
     setIsModalVisible(true);
   };
@@ -192,7 +192,7 @@ const Playlist = () => {
         </div>
 
         <Modal
-          title={id_play ? "Edit Playlist" : "Tambah Playlist"}
+          title={id ? "Edit Playlist" : "Tambah Playlist"}
           open={isModalVisible}
           onCancel={handleCancel}
           footer={null}
@@ -249,7 +249,7 @@ const Playlist = () => {
               <Space>
                 <Button onClick={handleCancel}>Batal</Button>
                 <Button type="primary" htmlType="submit">
-                  {id_play ? "Update" : "Simpan"}
+                  {id ? "Update" : "Simpan"}
                 </Button>
               </Space>
             </Form.Item>
@@ -272,7 +272,7 @@ const Playlist = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {groupedPlaylists[genre].map((playlist, idx) => (
                   <Card
-                    key={playlist.id_play}
+                    key={playlist.id}
                     hoverable
                     className={`rounded-lg shadow-md overflow-hidden hover-lift floating stagger-${(idx%5)+1}`}
                     cover={
@@ -301,7 +301,7 @@ const Playlist = () => {
                         icon={<DeleteOutlined />}
                         type="text"
                         danger
-                        onClick={() => handleDelete(playlist.id_play)}
+                        onClick={() => handleDelete(playlist.id)}
                       >
                         Hapus
                       </Button>,

@@ -33,7 +33,7 @@ export const createData = async (endpoint, data) => {
 
 export const updateData = async (endpoint, data) => {
   const response = await fetch(`${BASE_URL}${endpoint}`, {
-    method: "POST",
+    method: "PUT", // HARUS PUT, bukan POST
     body: data, // Jangan stringify kalau FormData
   });
 
@@ -44,7 +44,6 @@ export const updateData = async (endpoint, data) => {
 
   return await response.json();
 };
-
 
 
 

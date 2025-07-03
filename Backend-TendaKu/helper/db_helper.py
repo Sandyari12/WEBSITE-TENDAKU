@@ -6,8 +6,8 @@ DB_HOST = os.environ.get('DB_HOST')
 DB_NAME = os.environ.get('DB_NAME')
 DB_USER = os.environ.get('DB_USER')
 DB_PASSWORD = os.environ.get('DB_PASSWORD')
-DB_POOL_NAME = os.environ.get('DB_POOL_NAME')
-POOL_SIZE = int(os.environ.get('POOL_SIZE'))
+DB_POOL_NAME = os.environ.get('DB_POOL_NAME', 'mypool')
+POOL_SIZE = int(os.environ.get('POOL_SIZE', 20))  # Default 20 jika tidak di-set
 
 db_pool = MySQLConnectionPool(
     host=DB_HOST,
