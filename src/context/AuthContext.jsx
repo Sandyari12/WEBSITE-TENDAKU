@@ -8,7 +8,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
@@ -16,71 +15,62 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (username, password) => {
     try {
-      // Validasi dasar
-      if (!email.includes('@')) {
-        message.error('Email harus mengandung karakter @');
-        return { success: false, message: 'Email tidak valid' };
-      }
-      
-      if (password.length < 6) {
-        message.error('Password minimal 6 karakter');
-        return { success: false, message: 'Password terlalu pendek' };
-      }
+      const formData = new FormData();
+      formData.append('username', username);
+      formData.append('password', password);
 
-      // Simulasi login berhasil
-      const userData = {
-        id: Date.now(),
-        name: email.split('@')[0], // Menggunakan bagian sebelum @ sebagai nama
-        email: email,
-        role: email.toLowerCase() === 'admin@tendaku.com' ? 'admin' : 'user'
-      };
-      
-      setUser(userData);
+      const response = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) throw new Error('Login gagal');
+
+      const data = await response.json();
+      const { access_token, user: userData } = data;
+
+      localStorage.setItem('token', access_token);
       localStorage.setItem('user', JSON.stringify(userData));
+
+      setUser(userData);
       message.success('Login berhasil!');
       return { success: true };
-    } catch (error) {
-      message.error('Login gagal: ' + (error.message || 'Terjadi kesalahan'));
-      return { success: false, message: error.message };
+    } catch (err) {
+      console.error(err);
+      message.error('Email atau password salah!');
+      return { success: false };
     }
   };
 
-  const register = async (name, email, password) => {
+  const register = async (name, username, password) => {
     try {
-      // Validasi dasar
-      if (!email.includes('@')) {
-        message.error('Email harus mengandung karakter @');
-        return { success: false, message: 'Email tidak valid' };
-      }
-      
-      if (password.length < 6) {
-        message.error('Password minimal 6 karakter');
-        return { success: false, message: 'Password terlalu pendek' };
-      }
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('username', username);
+      formData.append('password', password);
 
-      // Simulasi register berhasil
-      const userData = {
-        id: Date.now(),
-        name: name,
-        email: email,
-        role: email.toLowerCase() === 'admin@tendaku.com' ? 'admin' : 'user'
-      };
-      
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+      const response = await fetch('/api/v1/user/create', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) throw new Error('Registrasi gagal');
+
       message.success('Registrasi berhasil! Silakan login.');
       return { success: true };
-    } catch (error) {
-      message.error('Registrasi gagal: ' + (error.message || 'Terjadi kesalahan'));
-      return { success: false, message: error.message };
+    } catch (err) {
+      console.error(err);
+      message.error('Registrasi gagal');
+      return { success: false };
     }
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
     message.success('Logout berhasil!');
     window.location.href = '/';
   };
@@ -89,9 +79,9 @@ export const AuthProvider = ({ children }) => {
     setUser(prev => {
       const updatedUser = {
         ...prev,
-        name: name !== undefined ? name : prev.name,
-        password: password !== undefined ? password : prev.password,
-        photo: photo !== undefined ? photo : prev.photo,
+        name: name ?? prev.name,
+        password: password ?? prev.password,
+        photo: photo ?? prev.photo
       };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       return updatedUser;
@@ -101,14 +91,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        login,
-        register,
-        logout,
-        updateProfile
-      }}
+      value={{ user, loading, login, register, logout, updateProfile }}
     >
       {children}
     </AuthContext.Provider>
@@ -121,4 +104,4 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}; 
+};

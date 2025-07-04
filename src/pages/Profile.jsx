@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Card, Typography, Button, Avatar, Input, Form, Upload } from 'antd';
+import { Card, Typography, Button, Avatar, Input, Form } from 'antd';
 import { UserOutlined, EditOutlined, SaveOutlined, UploadOutlined, HomeOutlined } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -65,7 +65,11 @@ const Profile = () => {
           Kembali ke Beranda
         </Button>
       </div>
-      <Card className="w-full max-w-lg shadow-2xl rounded-2xl border border-[#2C3E50] p-8" style={{ background: 'rgba(255,255,255,0.95)' }}>
+
+      <Card
+        className="w-full max-w-lg shadow-2xl rounded-2xl border border-[#2C3E50] p-8"
+        style={{ background: 'rgba(255,255,255,0.95)' }}
+      >
         <div className="flex flex-col items-center mb-6">
           <Avatar
             size={96}
@@ -73,9 +77,14 @@ const Profile = () => {
             src={photoPreview}
             style={{ backgroundColor: '#2C3E50', marginBottom: 16 }}
           />
-          <Title level={2} style={{ color: '#2C3E50', textAlign: 'center', marginBottom: 0 }}>Profil Saya</Title>
-          <Paragraph style={{ color: '#2C3E50', marginTop: 4, marginBottom: 0, fontWeight: 500 }}>{user.role === 'admin' ? 'Admin' : 'Pengguna'}</Paragraph>
+          <Title level={2} style={{ color: '#2C3E50', textAlign: 'center', marginBottom: 0 }}>
+            Profil Saya
+          </Title>
+          <Paragraph style={{ color: '#2C3E50', marginTop: 4, marginBottom: 0, fontWeight: 500 }}>
+            {user.role === 'admin' ? 'Admin' : 'Pengguna'}
+          </Paragraph>
         </div>
+
         {editMode ? (
           <Form
             form={form}
@@ -83,21 +92,19 @@ const Profile = () => {
             initialValues={{ name: user.name, password: '' }}
             onFinish={handleSave}
           >
-            <Form.Item label="Nama" name="name" rules={[{ required: true, message: 'Nama tidak boleh kosong' }]}> 
+            <Form.Item
+              label="Nama"
+              name="name"
+              rules={[{ required: true, message: 'Nama tidak boleh kosong' }]}
+            >
               <Input />
             </Form.Item>
+
             <Form.Item label="Password Baru" name="password">
               <Input.Password placeholder="Kosongkan jika tidak ingin mengubah" />
             </Form.Item>
+
             <Form.Item label="Foto Profil">
-              <Upload
-                showUploadList={false}
-                beforeUpload={() => false}
-                customRequest={() => {}}
-                accept="image/*"
-              >
-                <Button icon={<UploadOutlined />}>Pilih Foto</Button>
-              </Upload>
               <input
                 type="file"
                 accept="image/*"
@@ -106,10 +113,10 @@ const Profile = () => {
                 onChange={handlePhotoChange}
               />
               <Button
-                style={{ marginTop: 8 }}
+                icon={<UploadOutlined />}
                 onClick={() => fileInputRef.current.click()}
               >
-                Upload Foto
+                Pilih Foto
               </Button>
               {photoPreview && (
                 <div className="mt-4 flex justify-center">
@@ -117,8 +124,14 @@ const Profile = () => {
                 </div>
               )}
             </Form.Item>
+
             <div className="flex gap-2 mt-6">
-              <Button type="primary" htmlType="submit" icon={<SaveOutlined />} style={{ backgroundColor: '#2C3E50', borderColor: '#2C3E50' }}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                icon={<SaveOutlined />}
+                style={{ backgroundColor: '#2C3E50', borderColor: '#2C3E50' }}
+              >
                 Simpan
               </Button>
               <Button onClick={handleCancel}>Batal</Button>
@@ -136,8 +149,13 @@ const Profile = () => {
                 <span className="text-gray-700">{user.email}</span>
               </div>
             </div>
+
             <div className="flex gap-2 mb-4">
-              <Button icon={<EditOutlined />} onClick={handleEdit} style={{ backgroundColor: '#2C3E50', borderColor: '#2C3E50', color: 'white' }}>
+              <Button
+                icon={<EditOutlined />}
+                onClick={handleEdit}
+                style={{ backgroundColor: '#2C3E50', borderColor: '#2C3E50', color: 'white' }}
+              >
                 Edit Profil
               </Button>
               <Button type="primary" danger onClick={logout}>
@@ -151,4 +169,4 @@ const Profile = () => {
   );
 };
 
-export default Profile; 
+export default Profile;

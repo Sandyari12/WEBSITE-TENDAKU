@@ -1,23 +1,39 @@
+// ✅ Register.jsx (diperbaiki: aturan "rules" pakai kurung kurawal yang benar)
 import React from 'react';
 import { Form, Input, Button, Card, Typography, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 
 const { Title } = Typography;
 
 const Register = () => {
   const navigate = useNavigate();
-  const { register } = useAuth();
   const [form] = Form.useForm();
 
   const onFinish = async (values) => {
-    const result = await register(values.name, values.email, values.password);
-    if (result.success) {
-      message.success('Registrasi berhasil! Silakan login.');
-      navigate('/login');
-    } else {
-      message.error(result.message || 'Registrasi gagal');
+    const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("username", values.email); // sesuai backend
+    formData.append("password", values.password);
+    formData.append("roles", "user"); // default user
+
+    try {
+      const response = await fetch("/api/v1/user/create", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("DETAIL:", errorText);
+        throw new Error("Registrasi gagal");
+      }
+
+      message.success("Registrasi berhasil! Silakan login.");
+      navigate("/login");
+    } catch (error) {
+      console.error("Registrasi gagal:", error);
+      message.error("Registrasi gagal");
     }
   };
 
@@ -51,14 +67,7 @@ const Register = () => {
             name="email"
             rules={[
               { required: true, message: 'Email harus diisi' },
-              { 
-                validator: (_, value) => {
-                  if (!value || value.includes('@')) {
-                    return Promise.resolve();
-                  }
-                  return Promise.reject('Email harus mengandung karakter @');
-                }
-              }
+              { type: 'email', message: 'Email tidak valid' }
             ]}
           >
             <Input
@@ -105,7 +114,7 @@ const Register = () => {
                   }
                   return Promise.reject(new Error('Password tidak cocok'));
                 },
-              }),
+              })
             ]}
           >
             <Input.Password
@@ -140,4 +149,4 @@ const Register = () => {
   );
 };
 
-export default Register; 
+export default Register;

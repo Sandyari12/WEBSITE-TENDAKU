@@ -2,7 +2,6 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import create_access_token, decode_token
 from flask_bcrypt import Bcrypt
-
 from helper.db_helper import get_connection
 
 bcrypt = Bcrypt()
@@ -21,8 +20,7 @@ def login():
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
     query = "SELECT * FROM user WHERE username = %s"
-    request_query = (username,)
-    cursor.execute(query, request_query)
+    cursor.execute(query, (username,))
     user = cursor.fetchone()
     cursor.close()
 
@@ -30,10 +28,20 @@ def login():
         return jsonify({"msg": "Bad username or password"}), 401
 
     access_token = create_access_token(
-        identity= username, additional_claims={'roles': "add_your_roles"})
+        identity=username, additional_claims={'role': user.get('roles')})
     decoded_token = decode_token(access_token)
     expires = decoded_token['exp']
-    return jsonify({"access_token": access_token, "expires_in": expires, "type": "Bearer"})
+
+    return jsonify({
+        "access_token": access_token,
+        "expires_in": expires,
+        "type": "Bearer",
+        "user": {
+            "id": user['id'],
+            "username": user['username'],
+            "role": user['roles']
+        }
+    })
 
 
 @auth_endpoints.route('/register', methods=['POST'])
@@ -41,17 +49,18 @@ def register():
     """Routes for register"""
     username = request.form['username']
     password = request.form['password']
-    # To hash a password
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
     connection = get_connection()
     cursor = connection.cursor()
-    insert_query = "INSERT INTO users (username, password) values (%s, %s)"
-    request_insert = (username, hashed_password)
+    insert_query = "INSERT INTO user (username, password, roles) values (%s, %s, %s)"
+    roles = request.form.get('roles', 'user')
+    request_insert = (username, hashed_password, roles)
     cursor.execute(insert_query, request_insert)
     connection.commit()
-    cursor.close()
     new_id = cursor.lastrowid
+    cursor.close()
+
     if new_id:
         return jsonify({"message": "OK",
                         "description": "User created",

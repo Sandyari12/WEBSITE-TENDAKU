@@ -13,29 +13,19 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import OrderSuccess from './pages/OrderSuccess';
 import { CartProvider } from './context/CartContext';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProductProvider } from './context/ProductContext';
-import { useAuth } from './context/AuthContext';
 import Admin from './pages/Admin';
 import Profile from './pages/Profile';
 import AdminLayout from './components/AdminLayout';
 
-// Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-  
-  if (!user) {
-    return <Navigate to="/login" state={{ from: window.location.pathname }} replace />;
-  }
-  
+  if (loading) return <div>Loading...</div>;
+  if (!user) return <Navigate to="/login" state={{ from: window.location.pathname }} replace />;
   return children;
 };
 
-// Admin-only Protected Route
 const AdminRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <div>Loading...</div>;
