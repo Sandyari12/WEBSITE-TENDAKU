@@ -3,6 +3,7 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import create_access_token, decode_token
 from flask_bcrypt import Bcrypt
 from helper.db_helper import get_connection
+import json
 
 bcrypt = Bcrypt()
 auth_endpoints = Blueprint('auth', __name__)
@@ -11,6 +12,7 @@ auth_endpoints = Blueprint('auth', __name__)
 @auth_endpoints.route('/login', methods=['POST'])
 def login():
     """Routes for authentication"""
+    print("DEBUG request.form:", request.form)
     username = request.form['username']
     password = request.form['password']
 
@@ -28,7 +30,7 @@ def login():
         return jsonify({"msg": "Bad username or password"}), 401
 
     access_token = create_access_token(
-        identity=username, additional_claims={'role': user.get('roles')})
+        identity=json.dumps({'id': user['id'], 'role': user['roles']}))
     decoded_token = decode_token(access_token)
     expires = decoded_token['exp']
 

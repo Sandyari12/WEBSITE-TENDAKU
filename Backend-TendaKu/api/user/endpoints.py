@@ -15,12 +15,14 @@ def read_users():
     """Ambil semua data user (kecuali password)"""
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
-    select_query = "SELECT id, name, username, roles FROM user"
-    cursor.execute(select_query)
-    results = cursor.fetchall()
-    cursor.close()
-    connection.close()
-    return jsonify({"message": "OK", "datas": results}), 200
+    try:
+        select_query = "SELECT id, name, username, roles FROM user"
+        cursor.execute(select_query)
+        results = cursor.fetchall()
+        return jsonify({"message": "OK", "datas": results}), 200
+    finally:
+        cursor.close()
+        connection.close()
 
 @user_endpoints.route('/create', methods=['POST'])
 # @jwt_required()
@@ -34,16 +36,18 @@ def create_user():
 
     connection = get_connection()
     cursor = connection.cursor()
-    insert_query = "INSERT INTO user (name, username, password, roles) VALUES (%s, %s, %s, %s)"
-    request_insert = (name, username, password_hash, roles)
-    cursor.execute(insert_query, request_insert)
-    connection.commit()
-    cursor.close()
-    connection.close()
-    new_id = cursor.lastrowid
-    if new_id:
-        return jsonify({"username": username, "message": "Inserted", "user_id": new_id}), 201
-    return jsonify({"message": "Cant Insert Data"}), 500
+    try:
+        insert_query = "INSERT INTO user (name, username, password, roles) VALUES (%s, %s, %s, %s)"
+        request_insert = (name, username, password_hash, roles)
+        cursor.execute(insert_query, request_insert)
+        connection.commit()
+        new_id = cursor.lastrowid
+        if new_id:
+            return jsonify({"username": username, "message": "Inserted", "user_id": new_id}), 201
+        return jsonify({"message": "Cant Insert Data"}), 500
+    finally:
+        cursor.close()
+        connection.close()
 
 @user_endpoints.route('/update/<user_id>', methods=['PUT'])
 @jwt_required()
@@ -56,18 +60,20 @@ def update_user(user_id):
 
     connection = get_connection()
     cursor = connection.cursor()
-    if password:
-        password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
-        update_query = "UPDATE user SET name=%s, username=%s, password=%s, roles=%s WHERE id=%s"
-        update_request = (name, username, password_hash, roles, user_id)
-    else:
-        update_query = "UPDATE user SET name=%s, username=%s, roles=%s WHERE id=%s"
-        update_request = (name, username, roles, user_id)
-    cursor.execute(update_query, update_request)
-    connection.commit()
-    cursor.close()
-    connection.close()
-    return jsonify({"message": "updated", "user_id": user_id}), 200
+    try:
+        if password:
+            password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+            update_query = "UPDATE user SET name=%s, username=%s, password=%s, roles=%s WHERE id=%s"
+            update_request = (name, username, password_hash, roles, user_id)
+        else:
+            update_query = "UPDATE user SET name=%s, username=%s, roles=%s WHERE id=%s"
+            update_request = (name, username, roles, user_id)
+        cursor.execute(update_query, update_request)
+        connection.commit()
+        return jsonify({"message": "updated", "user_id": user_id}), 200
+    finally:
+        cursor.close()
+        connection.close()
 
 @user_endpoints.route('/delete/<user_id>', methods=['DELETE'])
 @jwt_required()
@@ -75,12 +81,14 @@ def delete_user(user_id):
     """Hapus user"""
     connection = get_connection()
     cursor = connection.cursor()
-    delete_query = "DELETE FROM user WHERE id = %s"
-    cursor.execute(delete_query, (user_id,))
-    connection.commit()
-    cursor.close()
-    connection.close()
-    return jsonify({"message": "Data deleted", "user_id": user_id})
+    try:
+        delete_query = "DELETE FROM user WHERE id = %s"
+        cursor.execute(delete_query, (user_id,))
+        connection.commit()
+        return jsonify({"message": "Data deleted", "user_id": user_id})
+    finally:
+        cursor.close()
+        connection.close()
 
 @user_endpoints.route('/read_by_role/<role>', methods=['GET'])
 @jwt_required()
@@ -88,12 +96,14 @@ def read_by_role(role):
     """Ambil user berdasarkan role"""
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
-    select_query = "SELECT id, name, email, phone, role FROM user WHERE role = %s"
-    cursor.execute(select_query, (role,))
-    results = cursor.fetchall()
-    cursor.close()
-    connection.close()
-    return jsonify({"message": "OK", "datas": results}), 200
+    try:
+        select_query = "SELECT id, name, email, phone, role FROM user WHERE role = %s"
+        cursor.execute(select_query, (role,))
+        results = cursor.fetchall()
+        return jsonify({"message": "OK", "datas": results}), 200
+    finally:
+        cursor.close()
+        connection.close()
 
 @user_endpoints.route('/count_by_role/<role>', methods=['GET'])
 @jwt_required()
@@ -101,12 +111,14 @@ def count_users_by_role(role):
     """Hitung jumlah user berdasarkan role"""
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
-    count_query = "SELECT COUNT(*) AS total_users FROM user WHERE role = %s"
-    cursor.execute(count_query, (role,))
-    result = cursor.fetchone()
-    cursor.close()
-    connection.close()
-    return jsonify({"message": "OK", "role": role, "total_users": result['total_users']}), 200
+    try:
+        count_query = "SELECT COUNT(*) AS total_users FROM user WHERE role = %s"
+        cursor.execute(count_query, (role,))
+        result = cursor.fetchone()
+        return jsonify({"message": "OK", "role": role, "total_users": result['total_users']}), 200
+    finally:
+        cursor.close()
+        connection.close()
 
 @user_endpoints.route("/upload", methods=["POST"])
 @jwt_required()

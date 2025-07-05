@@ -4,7 +4,7 @@ import { SearchOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { useProducts } from '../context/ProductContext';
+import { getProducts } from '../utils/api';
 
 const { Title, Paragraph } = Typography;
 const { Option } = Select;
@@ -13,10 +13,11 @@ const Products = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
   const { user } = useAuth();
-  const { products } = useProducts();
   const { addToCart, cart } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (location.state?.selectedCategory) {
@@ -24,6 +25,20 @@ const Products = () => {
       setCategory(location.state.selectedCategory);
     }
   }, [location.state]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const data = await getProducts();
+        setProducts(data);
+      } catch (err) {
+        message.error('Gagal mengambil data produk');
+      }
+      setLoading(false);
+    };
+    fetchProducts();
+  }, []);
 
   const handleAddToCart = (product) => {
     if (!user) {

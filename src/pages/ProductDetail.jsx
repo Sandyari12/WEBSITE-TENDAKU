@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Typography, 
@@ -11,7 +11,7 @@ import {
 } from 'antd';
 import { ShoppingCartOutlined } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
-import { useProducts } from '../context/ProductContext';
+import { getProductById } from '../utils/api';
 
 const { Title, Paragraph } = Typography;
 
@@ -19,9 +19,22 @@ const ProductDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { products, reduceStock } = useProducts();
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const product = products.find(p => p.id === parseInt(id));
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setLoading(true);
+      try {
+        const data = await getProductById(id);
+        setProduct(data);
+      } catch (err) {
+        message.error('Gagal mengambil detail produk');
+      }
+      setLoading(false);
+    };
+    fetchProduct();
+  }, [id]);
 
   const handleRent = () => {
     if (!user) {
@@ -29,7 +42,7 @@ const ProductDetail = () => {
       navigate('/login');
       return;
     }
-    reduceStock(product.id, 1);
+    // reduceStock(product.id, 1);
     navigate(`/rent/${id}`);
   };
 

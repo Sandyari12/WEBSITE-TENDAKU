@@ -181,7 +181,24 @@ const Playlist = () => {
             {grouped[genre].map((playlist) => (
               <Card
                 key={playlist.id}
-                cover={<img alt={playlist.play_name} src={playlist.play_thumbnail} />}
+                cover={
+                  <div className="relative group">
+                    <img
+                      alt={playlist.play_name}
+                      src={playlist.play_thumbnail}
+                      className="w-full h-48 object-cover rounded-t-lg"
+                    />
+                    <a
+                      href={playlist.play_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 rounded-t-lg"
+                      title="Tonton di YouTube"
+                    >
+                      <PlayCircleOutlined style={{ fontSize: 48, color: 'white' }} />
+                    </a>
+                  </div>
+                }
                 actions={
                   isAdmin
                     ? [
@@ -193,12 +210,7 @@ const Playlist = () => {
               >
                 <Card.Meta
                   title={playlist.play_name}
-                  description={
-                    <>
-                      <p>{playlist.play_description}</p>
-                      <Tag>{playlist.play_genre}</Tag>
-                    </>
-                  }
+                  description={<p>{playlist.play_description}</p>}
                 />
               </Card>
             ))}

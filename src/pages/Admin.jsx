@@ -1,31 +1,27 @@
-import { useState } from 'react'
-import { useProducts } from '../context/ProductContext'
+import { useState, useEffect } from 'react'
 import { Drawer, Button as AntButton, message, Modal } from 'antd'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+import {
+  getProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getRentals,
+  updateRental,
+  deleteRental,
+} from '../utils/api'
 
 function Admin() {
   const [activeTab, setActiveTab] = useState('products')
-  const { products, addProduct, editProduct, deleteProduct } = useProducts()
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+  const [loading, setLoading] = useState(true);
 
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      customerName: 'John Doe',
-      items: ['Tenda Dome 2 Orang', 'Kompor Portable'],
-      total: 80000,
-      status: 'pending',
-      date: '2024-03-15'
-    },
-    {
-      id: 2,
-      customerName: 'Jane Smith',
-      items: ['Sleeping Bag Premium'],
-      total: 40000,
-      status: 'completed',
-      date: '2024-03-14'
-    }
-  ])
+  const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
 
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -68,39 +64,73 @@ function Admin() {
     play_description: ''
   })
 
-  const handleAddProduct = (e) => {
-    e.preventDefault()
-    const product = {
-      id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
-      ...newProduct,
-      price: parseInt(newProduct.price),
-      stock: parseInt(newProduct.stock),
-      description: newProduct.description || '',
-      additionalInfo: newProduct.additionalInfo || '',
-    }
-    addProduct(product)
-    setNewProduct({
-      name: '',
-      category: '',
-      price: '',
-      stock: '',
-      image: '',
-      description: '',
-      additionalInfo: '',
-    })
-    setDrawerOpen(false)
-    message.success('Produk berhasil ditambahkan!')
-  }
+  useEffect(() => {
+    if (!isAdmin) return;
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const data = await getProducts();
+        setProducts(data);
+      } catch (err) {
+        message.error('Gagal mengambil data produk');
+      }
+      setLoading(false);
+    };
+    fetchProducts();
+  }, [isAdmin]);
 
-  const handleUpdateOrderStatus = (orderId, newStatus) => {
-    setOrders(orders.map(order =>
-      order.id === orderId ? { ...order, status: newStatus } : order
-    ))
-  }
+  useEffect(() => {
+    if (!isAdmin) return;
+    const fetchOrders = async () => {
+      setLoadingOrders(true);
+      try {
+        const data = await getRentals();
+        setOrders(data);
+      } catch (err) {
+        message.error('Gagal mengambil data pesanan');
+      }
+      setLoadingOrders(false);
+    };
+    fetchOrders();
+  }, [isAdmin]);
+
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData();
+      formData.append('name', newProduct.name);
+      formData.append('category', newProduct.category);
+      formData.append('price', newProduct.price);
+      formData.append('stock', newProduct.stock);
+      formData.append('image', newProduct.image);
+      formData.append('description', newProduct.description);
+      await createProduct(formData);
+      message.success('Produk berhasil ditambahkan!');
+      setDrawerOpen(false);
+      setNewProduct({ name: '', category: '', price: '', stock: '', image: '', description: '', additionalInfo: '' });
+      const data = await getProducts();
+      setProducts(data);
+    } catch (err) {
+      message.error('Gagal menambah produk');
+    }
+  };
+
+  const handleUpdateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const formData = new FormData();
+      formData.append('status', newStatus);
+      await updateRental(orderId, formData);
+      message.success('Status pesanan berhasil diubah!');
+      const data = await getRentals();
+      setOrders(data);
+    } catch (err) {
+      message.error('Gagal mengubah status pesanan');
+    }
+  };
 
   const handleEditClick = (product) => {
-    setEditId(product.id)
-    setEditData({ ...product })
+    setEditId(product.id);
+    setEditData({ ...product });
   }
 
   const handleEditChange = (e) => {
@@ -108,17 +138,26 @@ function Admin() {
     setEditData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleEditSubmit = (e) => {
-    e.preventDefault()
-    editProduct({
-      ...editData,
-      price: parseInt(editData.price),
-      stock: parseInt(editData.stock),
-    })
-    setEditId(null)
-    setEditData({})
-    message.success('Produk berhasil diubah!')
-  }
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData();
+      formData.append('name', editData.name);
+      formData.append('category', editData.category);
+      formData.append('price', editData.price);
+      formData.append('stock', editData.stock);
+      formData.append('image', editData.image);
+      formData.append('description', editData.description);
+      await updateProduct(editId, formData);
+      message.success('Produk berhasil diubah!');
+      setEditId(null);
+      setEditData({});
+      const data = await getProducts();
+      setProducts(data);
+    } catch (err) {
+      message.error('Gagal mengubah produk');
+    }
+  };
 
   const handleDelete = (id) => {
     Modal.confirm({
@@ -127,12 +166,18 @@ function Admin() {
       okText: 'Hapus',
       okType: 'danger',
       cancelText: 'Batal',
-      onOk() {
-        deleteProduct(id);
+      async onOk() {
+        try {
+          await deleteProduct(id);
         message.success('Produk berhasil dihapus!');
+          const data = await getProducts();
+          setProducts(data);
+        } catch (err) {
+          message.error('Gagal menghapus produk');
+        }
       },
     });
-  }
+  };
 
   const handleAddPlaylist = (e) => {
     e.preventDefault();
@@ -165,6 +210,26 @@ function Admin() {
     });
   };
 
+  const handleDeleteOrder = (orderId) => {
+    Modal.confirm({
+      title: 'Konfirmasi Hapus Pesanan',
+      content: 'Yakin ingin menghapus pesanan ini?',
+      okText: 'Hapus',
+      okType: 'danger',
+      cancelText: 'Batal',
+      async onOk() {
+        try {
+          await deleteRental(orderId);
+          message.success('Pesanan berhasil dihapus!');
+          const data = await getRentals();
+          setOrders(data);
+        } catch (err) {
+          message.error('Gagal menghapus pesanan');
+        }
+      },
+    });
+  };
+
   // Dummy statistics for cards
   const stats = [
     { label: 'Total Produk', value: products.length, color: 'text-blue-600' },
@@ -172,6 +237,11 @@ function Admin() {
     { label: 'Pesanan Menunggu', value: orders.filter(o => o.status === 'pending').length, color: 'text-yellow-600' },
     { label: 'Pesanan Dibatalkan', value: 0, color: 'text-red-600' },
   ];
+
+  // Render hanya jika admin
+  if (!isAdmin) {
+    return <div className="text-center mt-12">Anda tidak memiliki akses ke halaman ini.</div>;
+  }
 
   return (
     <div className="max-w-6xl mx-auto">

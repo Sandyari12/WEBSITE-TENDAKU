@@ -21,14 +21,33 @@ export const AuthProvider = ({ children }) => {
       formData.append('username', username);
       formData.append('password', password);
 
+      // Debug: Log the FormData being sent
+      console.log('=== LOGIN DEBUG ===');
+      console.log('Username:', username);
+      console.log('Password:', password);
+      console.log('FormData entries:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+      }
+
       const response = await fetch('/api/v1/auth/login', {
         method: 'POST',
         body: formData
       });
 
-      if (!response.ok) throw new Error('Login gagal');
+      // Debug: Log response details
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log('Error response:', errorText);
+        throw new Error('Login gagal');
+      }
 
       const data = await response.json();
+      console.log('Success response:', data);
+      
       const { access_token, user: userData } = data;
 
       localStorage.setItem('token', access_token);
@@ -38,7 +57,7 @@ export const AuthProvider = ({ children }) => {
       message.success('Login berhasil!');
       return { success: true };
     } catch (err) {
-      console.error(err);
+      console.error('Login error:', err);
       message.error('Email atau password salah!');
       return { success: false };
     }
@@ -51,17 +70,38 @@ export const AuthProvider = ({ children }) => {
       formData.append('username', username);
       formData.append('password', password);
 
+      // Debug: Log the FormData being sent
+      console.log('=== REGISTER DEBUG ===');
+      console.log('Name:', name);
+      console.log('Username:', username);
+      console.log('Password:', password);
+      console.log('FormData entries:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+      }
+
       const response = await fetch('/api/v1/user/create', {
         method: 'POST',
         body: formData
       });
 
-      if (!response.ok) throw new Error('Registrasi gagal');
+      // Debug: Log response details
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.log('Error response:', errorText);
+        throw new Error('Registrasi gagal');
+      }
+
+      const data = await response.json();
+      console.log('Success response:', data);
 
       message.success('Registrasi berhasil! Silakan login.');
       return { success: true };
     } catch (err) {
-      console.error(err);
+      console.error('Register error:', err);
       message.error('Registrasi gagal');
       return { success: false };
     }

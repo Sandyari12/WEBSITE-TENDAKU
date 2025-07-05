@@ -21,16 +21,19 @@ UPLOAD_FOLDER = "img"
 
 
 @product_endpoints.route('/read', methods=['GET'])
-@jwt_required()
+# @jwt_required()
 def read():
     """Routes for module get list product"""
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
-    select_query = "SELECT * FROM product"
-    cursor.execute(select_query)
-    results = cursor.fetchall()
-    cursor.close()  # Close the cursor after query execution
-    return jsonify({"message": "OK", "datas": results}), 200
+    try:
+        select_query = "SELECT * FROM product"
+        cursor.execute(select_query)
+        results = cursor.fetchall()
+        return jsonify({"message": "OK", "datas": results}), 200
+    finally:
+        cursor.close()
+        connection.close()
 
 # @product_endpoints.route('/read', methods=['GET'])
 # @swag_from('docs/read_product.yml')
@@ -50,12 +53,15 @@ def read_product_id(product_id):
     """Routes for module get list product"""
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
-    select_query = "SELECT * FROM product where id_product = %s"
-    update_query = (product_id, )
-    cursor.execute(select_query, update_query)
-    results = cursor.fetchall()
-    cursor.close()  # Close the cursor after query execution
-    return jsonify({"message": "OK", "datas": results}), 200
+    try:
+        select_query = "SELECT * FROM product where id_product = %s"
+        update_query = (product_id, )
+        cursor.execute(select_query, update_query)
+        results = cursor.fetchall()
+        return jsonify({"message": "OK", "datas": results}), 200
+    finally:
+        cursor.close()
+        connection.close()
 
 
 @product_endpoints.route('/create', methods=['POST'])
@@ -66,7 +72,7 @@ def create():
     category = request.form['category']
     price = request.form['price']
     stock = request.form['stock']
-    image = request.form('image')
+    image = request.form.get('image')
     description = request.form['description']
 
     # image_path = None
@@ -81,15 +87,18 @@ def create():
 
     connection = get_connection()
     cursor = connection.cursor()
-    insert_query = "INSERT INTO product (name, category, price, stock, image,description) VALUES (%s, %s, %s, %s, %s, %s)"
-    request_insert = (name, category, price, stock, image, description)
-    cursor.execute(insert_query, request_insert)
-    connection.commit()  # Commit changes to the database
-    cursor.close()
-    new_id = cursor.lastrowid  # Get the newly inserted product's ID\
-    if new_id:
-        return jsonify({"name": name, "message": "Inserted", "id_product": new_id, "image": image_path}), 201
-    return jsonify({"message": "Cant Insert Data"}), 500
+    try:
+        insert_query = "INSERT INTO product (name, category, price, stock, image,description) VALUES (%s, %s, %s, %s, %s, %s)"
+        request_insert = (name, category, price, stock, image, description)
+        cursor.execute(insert_query, request_insert)
+        connection.commit()  # Commit changes to the database
+        new_id = cursor.lastrowid  # Get the newly inserted product's ID\
+        if new_id:
+            return jsonify({"name": name, "message": "Inserted", "id_product": new_id, "image": image}), 201
+        return jsonify({"message": "Cant Insert Data"}), 500
+    finally:
+        cursor.close()
+        connection.close()
 
 
 @product_endpoints.route('/update/<product_id>', methods=['PUT'])
@@ -99,20 +108,22 @@ def update(product_id):
     category = request.form['category']
     price = request.form['price']
     stock = request.form['stock']
-    image = request.form('image')
+    image = request.form.get('image')
     description = request.form['description']
 
 
     connection = get_connection()
     cursor = connection.cursor()
-
-    update_query = "UPDATE product SET name=%s, category=%s , price=%s, stock=%s, image=%s, description=%s WHERE id=%s"
-    update_request = (name, category, price, stock, image,description, product_id)
-    cursor.execute(update_query, update_request)
-    connection.commit()
-    cursor.close()
-    data = {"message": "updated", "id_product": product_id}
-    return jsonify(data), 200
+    try:
+        update_query = "UPDATE product SET name=%s, category=%s , price=%s, stock=%s, image=%s, description=%s WHERE id=%s"
+        update_request = (name, category, price, stock, image,description, product_id)
+        cursor.execute(update_query, update_request)
+        connection.commit()
+        data = {"message": "updated", "id_product": product_id}
+        return jsonify(data), 200
+    finally:
+        cursor.close()
+        connection.close()
 
 
 @product_endpoints.route('/delete/<product_id>', methods=['DELETE'])
@@ -120,14 +131,16 @@ def delete(product_id):
     """Routes for module to delete a product"""
     connection = get_connection()
     cursor = connection.cursor()
-
-    delete_query = "DELETE FROM product WHERE id = %s"
-    delete_id = (product_id,)
-    cursor.execute(delete_query, delete_id)
-    connection.commit()
-    cursor.close()
-    data = {"message": "Data deleted", "id": product_id}
-    return jsonify(data)
+    try:
+        delete_query = "DELETE FROM product WHERE id = %s"
+        delete_id = (product_id,)
+        cursor.execute(delete_query, delete_id)
+        connection.commit()
+        data = {"message": "Data deleted", "id": product_id}
+        return jsonify(data)
+    finally:
+        cursor.close()
+        connection.close()
 
 
 @product_endpoints.route("/upload", methods=["POST"])
