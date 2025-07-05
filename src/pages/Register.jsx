@@ -18,7 +18,7 @@ const Register = () => {
     formData.append("roles", "user"); // default user
 
     try {
-      const response = await fetch("/api/v1/user/create", {
+      const response = await fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/api/v1/user/create`, {
         method: "POST",
         body: formData,
       });

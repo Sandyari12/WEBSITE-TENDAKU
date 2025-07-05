@@ -54,7 +54,7 @@ def read_product_id(product_id):
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
     try:
-        select_query = "SELECT * FROM product where id_product = %s"
+        select_query = "SELECT * FROM product where id = %s"
         update_query = (product_id, )
         cursor.execute(select_query, update_query)
         results = cursor.fetchall()

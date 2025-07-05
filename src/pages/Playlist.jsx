@@ -1,35 +1,11 @@
-// ✅ Playlist.jsx (versi awal tanpa context)
+// ✅ Playlist.jsx (versi READ ONLY - sama seperti Products)
 import { useEffect, useState } from "react";
-import {
-  Card,
-  Button,
-  Modal,
-  Form,
-  Input,
-  Select,
-  Space,
-  message,
-  Tag,
-} from "antd";
-import {
-  EditOutlined,
-  DeleteOutlined,
-  PlayCircleOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
-import { useAuth } from "../context/AuthContext";
-
-const { TextArea } = Input;
-const { Option } = Select;
+import { Card, message } from "antd";
+import { PlayCircleOutlined } from "@ant-design/icons";
+import playlistHeader from '../assets/playlist_camp.jpeg';
 
 const Playlist = () => {
-  const [form] = Form.useForm();
   const [playlists, setPlaylists] = useState([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editId, setEditId] = useState(null);
-
-  const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
 
   const fetchPlaylists = async () => {
     try {
@@ -45,75 +21,6 @@ const Playlist = () => {
     fetchPlaylists();
   }, []);
 
-  const handleSubmit = () => {
-    form
-      .validateFields()
-      .then(async (values) => {
-        const payload = {
-          play_name: values.play_name,
-          play_url: values.play_url,
-          play_thumbnail: values.play_thumbnail,
-          play_genre: values.play_genre,
-          play_description: values.play_description,
-        };
-
-        const formData = new FormData();
-        Object.keys(payload).forEach((key) =>
-          formData.append(key, payload[key])
-        );
-
-        const url = editId
-          ? `/api/v1/playlist/${editId}`
-          : `/api/v1/playlist`;
-        const method = editId ? "PUT" : "POST";
-
-        const response = await fetch(url, {
-          method,
-          body: formData,
-        });
-
-        if (response.ok) {
-          message.success(editId ? "Berhasil diperbarui" : "Berhasil ditambahkan");
-          fetchPlaylists();
-          form.resetFields();
-          setIsModalVisible(false);
-          setEditId(null);
-        } else {
-          message.error("Gagal menyimpan playlist");
-        }
-      })
-      .catch(() => message.error("Harap isi semua field"));
-  };
-
-  const handleEdit = (playlist) => {
-    setEditId(playlist.id);
-    form.setFieldsValue(playlist);
-    setIsModalVisible(true);
-  };
-
-  const handleDelete = (id) => {
-    Modal.confirm({
-      title: "Hapus Playlist",
-      content: "Apakah yakin ingin menghapus playlist ini?",
-      okType: "danger",
-      onOk: async () => {
-        try {
-          await fetch(`/api/v1/playlist/${id}`, { method: "DELETE" });
-          message.success("Playlist berhasil dihapus");
-          fetchPlaylists();
-        } catch {
-          message.error("Gagal menghapus playlist");
-        }
-      },
-    });
-  };
-
-  const showModal = () => {
-    setEditId(null);
-    form.resetFields();
-    setIsModalVisible(true);
-  };
-
   const grouped = playlists.reduce((acc, p) => {
     const genre = p.play_genre || "Uncategorized";
     if (!acc[genre]) acc[genre] = [];
@@ -122,101 +29,74 @@ const Playlist = () => {
   }, {});
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Playlist Video</h2>
-        {isAdmin && (
-          <Button type="primary" icon={<PlusOutlined />} onClick={showModal}>
-            Tambah Playlist
-          </Button>
-        )}
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Section */}
+      <div
+        className="w-full h-56 md:h-64 lg:h-72 flex items-center justify-center relative rounded-b-2xl overflow-hidden mb-8"
+        style={{
+          backgroundImage: `url(${playlistHeader})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="relative z-10 flex flex-col items-center justify-center w-full h-full text-center">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white drop-shadow-lg mb-2">
+            PLAYLIST VIDEO TENDAKU
+          </h1>
+          <p className="text-white text-base md:text-lg mb-4 drop-shadow">
+            Jelajahi Kumpulan Video Playlist Tips dan Trik untuk Pengalaman Camping Terbaikmu.
+          </p>
+          <span className="inline-block bg-white/80 text-[#2C3E50] font-semibold px-4 py-1 rounded-full text-sm shadow">
+            {playlists.length} Video Tersedia
+          </span>
+        </div>
       </div>
 
-      <Modal
-        title={editId ? "Edit Playlist" : "Tambah Playlist"}
-        open={isModalVisible}
-        onCancel={() => {
-          setIsModalVisible(false);
-          setEditId(null);
-        }}
-        footer={null}
-      >
-        <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          <Form.Item name="play_name" label="Judul" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="play_url" label="URL Video" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="play_thumbnail" label="URL Thumbnail" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="play_genre" label="Genre" rules={[{ required: true }]}>
-            <Select>
-              <Option value="music">Music</Option>
-              <Option value="song">Song</Option>
-              <Option value="education">Education</Option>
-              <Option value="movie">Movie</Option>
-              <Option value="others">Others</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="play_description" label="Deskripsi" rules={[{ required: true }]}>
-            <TextArea rows={3} />
-          </Form.Item>
-          <Form.Item className="text-right">
-            <Space>
-              <Button onClick={() => setIsModalVisible(false)}>Batal</Button>
-              <Button type="primary" htmlType="submit">
-                {editId ? "Simpan" : "Tambah"}
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
-
+      {/* Section Semua Playlist */}
+      <div className="max-w-7xl mx-auto px-4">
+        <h2 className="text-2xl font-bold mb-2">Semua Playlist</h2>
       {Object.keys(grouped).map((genre) => (
         <div key={genre} className="mb-10">
-          <h3 className="text-xl font-bold mb-4">{genre}</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="flex items-center gap-2 mb-4">
+              <PlayCircleOutlined className="text-blue-600" />
+              <span className="text-xl font-semibold capitalize">{genre}</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {grouped[genre].map((playlist) => (
-              <Card
+                <div
                 key={playlist.id}
-                cover={
-                  <div className="relative group">
-                    <img
-                      alt={playlist.play_name}
-                      src={playlist.play_thumbnail}
-                      className="w-full h-48 object-cover rounded-t-lg"
-                    />
-                    <a
-                      href={playlist.play_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 rounded-t-lg"
-                      title="Tonton di YouTube"
-                    >
-                      <PlayCircleOutlined style={{ fontSize: 48, color: 'white' }} />
-                    </a>
-                  </div>
-                }
-                actions={
-                  isAdmin
-                    ? [
-                        <EditOutlined key="edit" onClick={() => handleEdit(playlist)} />,
-                        <DeleteOutlined key="delete" onClick={() => handleDelete(playlist.id)} />,
-                      ]
-                    : []
-                }
-              >
-                <Card.Meta
-                  title={playlist.play_name}
-                  description={<p>{playlist.play_description}</p>}
-                />
-              </Card>
+                  className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden group relative cursor-pointer"
+                >
+                  <a
+                    href={playlist.play_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                    title="Tonton di YouTube"
+                  >
+                    <div className="relative">
+                      <img
+                        alt={playlist.play_name}
+                        src={playlist.play_thumbnail}
+                        className="w-full h-40 object-cover"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                        <PlayCircleOutlined style={{ fontSize: 48, color: 'white' }} />
+                      </div>
+                    </div>
+                    <div className="absolute left-0 right-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-3 py-2">
+                      <span className="text-white font-bold text-base line-clamp-2 drop-shadow">
+                        {playlist.play_name}
+                      </span>
+                    </div>
+                  </a>
+                </div>
             ))}
           </div>
         </div>
       ))}
+      </div>
     </div>
   );
 };

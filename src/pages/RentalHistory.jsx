@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Tag, Typography, Card, Button, Space, message, Modal } from 'antd';
 import { ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const { Title } = Typography;
 
@@ -9,23 +10,33 @@ const RentalHistory = () => {
   const [rentals, setRentals] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
-    // Mengambil data riwayat sewa dari localStorage
-    const rentalHistory = JSON.parse(localStorage.getItem('rentalHistory') || '[]');
-    setRentals(rentalHistory);
-    setLoading(false);
+    const fetchRentals = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/v1/rental/read', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (!res.ok) throw new Error('Gagal mengambil data riwayat sewa');
+        const data = await res.json();
+        setRentals(data.datas || []);
+      } catch (err) {
+        message.error('Gagal mengambil data riwayat sewa');
+      }
+      setLoading(false);
+    };
+    fetchRentals();
   }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending':
+      case 'menunggu':
         return 'warning';
-      case 'active':
-        return 'processing';
-      case 'completed':
+      case 'selesai':
         return 'success';
-      case 'cancelled':
+      case 'dibatalkan':
         return 'error';
       default:
         return 'default';
@@ -53,34 +64,28 @@ const RentalHistory = () => {
       title: 'ID Sewa',
       dataIndex: 'id',
       key: 'id',
+      render: (_, record) => record.id || record.id_rental
+    },
+    {
+      title: 'Nama',
+      dataIndex: 'name',
+      key: 'name',
     },
     {
       title: 'Tanggal',
-      dataIndex: 'date',
-      key: 'date',
-      render: (date) => new Date(date).toLocaleDateString('id-ID', {
+      dataIndex: 'created_at',
+      key: 'created_at',
+      render: (date) => date ? new Date(date).toLocaleDateString('id-ID', {
         day: 'numeric',
         month: 'long',
         year: 'numeric'
-      })
-    },
-    {
-      title: 'Item',
-      dataIndex: 'items',
-      key: 'items',
-      render: (items) => (
-        <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-          {Array.isArray(items) && items.map((item, index) => (
-            <li key={index}>{item?.name} (x{item?.quantity || 1})</li>
-          ))}
-        </ul>
-      )
+      }) : '-'
     },
     {
       title: 'Total',
       dataIndex: 'total',
       key: 'total',
-      render: (total) => `Rp ${total.toLocaleString('id-ID')}`
+      render: (total) => `Rp ${Number(total || 0).toLocaleString('id-ID')}`
     },
     {
       title: 'Status',
@@ -88,10 +93,9 @@ const RentalHistory = () => {
       key: 'status',
       render: (status) => (
         <Tag color={getStatusColor(status)}>
-          {status === 'pending' && 'Menunggu'}
-          {status === 'active' && 'Aktif'}
-          {status === 'completed' && 'Selesai'}
-          {status === 'cancelled' && 'Dibatalkan'}
+          {status === 'menunggu' && 'Menunggu'}
+          {status === 'selesai' && 'Selesai'}
+          {status === 'dibatalkan' && 'Dibatalkan'}
         </Tag>
       )
     },
@@ -137,7 +141,7 @@ const RentalHistory = () => {
         <Table
           columns={columns}
           dataSource={rentals}
-          rowKey="id"
+          rowKey={record => record.id || record.id_rental}
           loading={loading}
           pagination={{
             showTotal: (total) => `Total ${total} riwayat sewa`

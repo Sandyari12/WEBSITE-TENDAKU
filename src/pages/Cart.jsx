@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, Button, InputNumber, Form, Input, message } from 'antd';
 import { DeleteOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 const Cart = () => {
   const navigate = useNavigate();
   const { cart, setCart, removeFromCart, updateQuantity, updateRentalDays, getTotalPrice } = useCart();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user?.username) {
+      form.setFieldsValue({ email: user.username });
+    }
+  }, [user, form]);
 
   const columns = [
     {
@@ -73,28 +81,56 @@ const Cart = () => {
     },
   ];
 
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     setLoading(true);
-    // Simulasi proses checkout
-    setTimeout(() => {
-      // Simpan data rental ke localStorage
-      const rentalHistory = JSON.parse(localStorage.getItem('rentalHistory') || '[]');
-      const newRental = {
-        id: Date.now(),
-        date: new Date().toISOString(),
-      items: cart,
-        customer: values,
-        total: getTotalPrice(),
-      };
-      rentalHistory.push(newRental);
-      localStorage.setItem('rentalHistory', JSON.stringify(rentalHistory));
-
+    try {
+      // 1. Create rental
+      const formData = new FormData();
+      formData.append('name', values.name);
+      formData.append('email', values.email);
+      formData.append('phone', values.phone);
+      formData.append('address', values.address);
+      formData.append('status', 'menunggu');
+      formData.append('total', getTotalPrice());
+      
+      const res = await fetch('/api/v1/rental/create', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: formData,
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Gagal membuat pesanan');
+      }
+      const data = await res.json();
+      const rentalId = data.id;
+      // 2. Create rental_item untuk setiap item di cart
+      for (const item of cart) {
+        const itemForm = new FormData();
+        itemForm.append('rental_id', rentalId);
+        itemForm.append('product_id', item.id);
+        itemForm.append('quantity', item.quantity || 1);
+        itemForm.append('rental_days', item.rentalDays || 1);
+        itemForm.append('price', item.price);
+        const itemRes = await fetch('/api/v1/rental_item/create', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+          body: itemForm,
+        });
+        if (!itemRes.ok) {
+          // Tidak perlu throw, rental sudah dibuat, tapi tampilkan warning
+          message.warning('Ada item gagal disimpan, silakan cek riwayat penyewaan.');
+        }
+      }
       // Clear cart
       setCart([]);
       message.success('Pesanan berhasil dibuat!');
-      navigate('/order-success', { state: { order: newRental } });
+      navigate('/order-success', { state: { order: { id: rentalId, items: cart, customer: values, total: getTotalPrice() } } });
+    } catch (error) {
+      message.error('Gagal melakukan penyewaan: ' + (error.message || 'Terjadi kesalahan'));
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
     return (
@@ -150,7 +186,7 @@ const Cart = () => {
                     { type: 'email', message: 'Email tidak valid' }
                   ]}
                 >
-                  <Input placeholder="contoh@email.com"/>
+                  <Input placeholder="contoh@email.com" disabled={!!user?.username}/>
                 </Form.Item>
                 <Form.Item
                   name="phone"

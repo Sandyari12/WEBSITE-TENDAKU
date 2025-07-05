@@ -23,13 +23,27 @@ UPLOAD_FOLDER = "img"
 @rental_item_endpoints.route('/read', methods=['GET'])
 @jwt_required()
 def read():
-    """Routes for module get list rental_item"""
+    rental_id = request.args.get('rental_id')
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
-    select_query = "SELECT * FROM rental_item"
-    cursor.execute(select_query)
+    if rental_id:
+        query = '''
+            SELECT ri.*, p.name as product_name
+            FROM rental_item ri
+            JOIN product p ON ri.product_id = p.id
+            WHERE ri.rental_id = %s
+        '''
+        cursor.execute(query, (rental_id,))
+    else:
+        query = '''
+            SELECT ri.*, p.name as product_name
+            FROM rental_item ri
+            JOIN product p ON ri.product_id = p.id
+        '''
+        cursor.execute(query)
     results = cursor.fetchall()
-    cursor.close()  # Close the cursor after query execution
+    cursor.close()
+    connection.close()
     return jsonify({"message": "OK", "datas": results}), 200
 
 # @rental_item_endpoints.route('/read', methods=['GET'])
@@ -85,10 +99,10 @@ def create():
     request_insert = (rental_id, product_id, quantity, rental_days, price)
     cursor.execute(insert_query, request_insert)
     connection.commit()  # Commit changes to the database
+    new_id = cursor.lastrowid  # Get the newly inserted rental_item's ID
     cursor.close()
-    new_id = cursor.lastrowid  # Get the newly inserted rental_item's ID\
     if new_id:
-        return jsonify({"rental_id": rental_id, "message": "Inserted", "id_rental_item": new_id, "image": image_path}), 201
+        return jsonify({"rental_id": rental_id, "message": "Inserted", "id": new_id}), 201
     return jsonify({"message": "Cant Insert Data"}), 500
 
 
@@ -105,8 +119,8 @@ def update(rental_item_id):
     connection = get_connection()
     cursor = connection.cursor()
 
-    update_query = "UPDATE rental_item SET rental_id=%s, product_id=%s , quantity=%s, rental_days=%s, price=%s WHERE id=%s"
-    update_request = (rental_id, product_id, quantity, rental_days, rental_item_id, price)
+    update_query = "UPDATE rental_item SET rental_id=%s, product_id=%s, quantity=%s, rental_days=%s, price=%s WHERE id=%s"
+    update_request = (rental_id, product_id, quantity, rental_days, price, rental_item_id)
     cursor.execute(update_query, update_request)
     connection.commit()
     cursor.close()

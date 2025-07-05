@@ -79,7 +79,8 @@ def create():
     email = request.form['email']
     phone = request.form['phone']
     address = request.form['address']
-    
+    status = request.form.get('status', 'menunggu')
+    total = request.form.get('total', 0)
 
     # image_path = None
     # if image:
@@ -94,13 +95,13 @@ def create():
     connection = get_connection()
     cursor = connection.cursor()
     try:
-        insert_query = "INSERT INTO rental (user_id, name, email, phone, address) VALUES (%s, %s, %s, %s, %s)"
-        request_insert = (user['id'], name, email, phone, address)
+        insert_query = "INSERT INTO rental (user_id, name, email, phone, address, status, total) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+        request_insert = (user['id'], name, email, phone, address, status, total)
         cursor.execute(insert_query, request_insert)
         connection.commit()
         new_id = cursor.lastrowid
         if new_id:
-            return jsonify({"name": name, "message": "Inserted", "id_rental": new_id}), 201
+            return jsonify({"name": name, "message": "Inserted", "id": new_id}), 201
         return jsonify({"message": "Cant Insert Data"}), 500
     finally:
         cursor.close()
@@ -120,15 +121,23 @@ def update(rental_id):
     email = request.form['email']
     phone = request.form['phone']
     address = request.form['address']
-    
-
+    status = request.form.get('status', None)
+    total = request.form.get('total', None)
 
     connection = get_connection()
     cursor = connection.cursor()
     try:
-        update_query = "UPDATE rental SET name=%s, email=%s , phone=%s, address=%s WHERE id=%s"
-        update_request = (name, email, phone, address, rental_id)
-        cursor.execute(update_query, update_request)
+        update_fields = ["name=%s", "email=%s", "phone=%s", "address=%s"]
+        update_values = [name, email, phone, address]
+        if status is not None:
+            update_fields.append("status=%s")
+            update_values.append(status)
+        if total is not None:
+            update_fields.append("total=%s")
+            update_values.append(total)
+        update_values.append(rental_id)
+        update_query = f"UPDATE rental SET {', '.join(update_fields)} WHERE id=%s"
+        cursor.execute(update_query, tuple(update_values))
         connection.commit()
         data = {"message": "updated", "id_rental": rental_id}
         return jsonify(data), 200

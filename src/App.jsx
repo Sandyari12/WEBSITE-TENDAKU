@@ -18,6 +18,9 @@ import { ProductProvider } from './context/ProductContext';
 import Admin from './pages/Admin';
 import Profile from './pages/Profile';
 import AdminLayout from './components/AdminLayout';
+import KelolaProduk from './pages/KelolaProduk';
+import KelolaPesanan from './pages/KelolaPesanan';
+import KelolaPlaylist from './pages/KelolaPlaylist';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -87,7 +90,7 @@ function App() {
                   }
                 />
                 <Route
-                  path="/rental-form"
+                  path="/rental-form/:id"
                   element={
                     <Layout>
                       <ProtectedRoute>
@@ -124,6 +127,36 @@ function App() {
                         <Profile />
                       </ProtectedRoute>
                     </Layout>
+                  }
+                />
+                <Route
+                  path="/kelolaproduk"
+                  element={
+                    <AdminRoute>
+                      <AdminLayout>
+                        <KelolaProduk />
+                      </AdminLayout>
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/kelolapesanan"
+                  element={
+                    <AdminRoute>
+                      <AdminLayout>
+                        <KelolaPesanan />
+                      </AdminLayout>
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/kelolaplaylist"
+                  element={
+                    <AdminRoute>
+                      <AdminLayout>
+                        <KelolaPlaylist />
+                      </AdminLayout>
+                    </AdminRoute>
                   }
                 />
                 <Route path="*" element={<Navigate to="/" replace />} />

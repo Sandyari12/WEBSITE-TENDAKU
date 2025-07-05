@@ -71,7 +71,7 @@ const Layout = ({ children }) => {
     <AntLayout className="min-h-screen">
       <Header className="flex items-center justify-between px-6" style={{ background: '#2C3E50' }}>
         <div className="flex items-center w-full">
-          <div className="text-white text-xl font-bold mr-8">TendaKu</div>
+          <div className="text-white text-2xl font-extrabold mr-8">TendaKu</div>
           <Menu
             theme="dark"
             mode="horizontal"
@@ -90,15 +90,40 @@ const Layout = ({ children }) => {
             className="flex-1"
           />
         </div>
-        <div className="flex items-center gap-4 ml-4">
+        <div className="flex items-center gap-6 ml-4">
           {user ? (
             <>
-              <Dropdown overlay={profileMenu} placement="bottomRight" trigger={["click"]}>
-                <div className="text-white flex items-center gap-2 cursor-pointer select-none">
-                  <Avatar src={user.photo} icon={!user.photo && <UserOutlined />} />
-                <span>{user.name}</span>
-              </div>
-              </Dropdown>
+              <button
+                className="flex items-center gap-2 focus:outline-none"
+                onClick={() => navigate('/profile')}
+                style={{ background: 'transparent', border: 'none', padding: 0, margin: 0, cursor: 'pointer' }}
+                title="Profil"
+              >
+                <span
+                  className={`rounded-full flex items-center justify-center ${user.photo ? '' : 'bg-white/20 p-2'}`}
+                  style={{ width: 36, height: 36 }}
+                >
+                  {user.photo ? (
+                    <img
+                      src={user.photo}
+                      alt="Profile"
+                      className="w-9 h-9 rounded-full object-cover"
+                    />
+                  ) : (
+                    <UserOutlined style={{ fontSize: 20 }} />
+                  )}
+                </span>
+                <span className="font-normal text-white text-base">{user.name}</span>
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1 px-2 py-1 text-sm font-normal hover:text-red-400 transition text-white"
+                title="Logout"
+                style={{ height: 32 }}
+              >
+                <LogoutOutlined style={{ fontSize: 15 }} />
+                <span className="text-sm">Logout</span>
+              </button>
             </>
           ) : (
             <Button

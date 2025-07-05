@@ -14,6 +14,28 @@ export const getData = async (endpoint) => {
   return await response.json();
 };
 
+export const getDataPrivate = async (url) => {
+  let token = await jwtStorage.retrieveToken();
+  return fetch(REACT_APP_API_URL + url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((response) =>
+      response.status >= 200 &&
+      response.status <= 299 &&
+      response.status !== 204
+        ? response.json()
+        : response,
+    )
+    .then((data) => {
+      return data;
+    })
+    .catch((err) => {
+      throw err;
+    });
+};
+
 export const createData = async (endpoint, data) => {
   const isFormData = data instanceof FormData;
 
@@ -135,6 +157,15 @@ export const deleteRental = async (id) => {
   });
   if (!res.ok) throw new Error('Gagal menghapus pesanan');
   return await res.json();
+};
+
+export const getRentalItemsByRentalId = async (rentalId) => {
+  const res = await fetch(`/api/v1/rental_item/read?rental_id=${rentalId}`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!res.ok) throw new Error('Gagal mengambil detail pesanan');
+  const data = await res.json();
+  return data.datas || [];
 };
 
 export async function getPlaylists() {

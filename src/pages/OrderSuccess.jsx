@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Typography, Card } from 'antd';
 import {
   CheckCircleOutlined,
@@ -13,6 +13,21 @@ const { Title, Paragraph } = Typography;
 const OrderSuccess = () => {
   const location = useLocation();
   const { order } = location.state || {};
+  const [items, setItems] = useState(order?.items || []);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Jika items kosong dan ada order.id, fetch dari backend
+    if ((!items || items.length === 0) && order?.id) {
+      setLoading(true);
+      fetch(`/api/v1/rental_item/read?rental_id=${order.id}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      })
+        .then(res => res.json())
+        .then(data => setItems(data.datas || []))
+        .finally(() => setLoading(false));
+    }
+  }, [order, items]);
 
   if (!order) {
     return (
@@ -47,14 +62,24 @@ const OrderSuccess = () => {
               </tr>
             </thead>
             <tbody>
-              {order.items.map(item => (
-                <tr key={item.id} className="border-b border-gray-100 last:border-b-0">
-                  <td className="py-3 text-gray-800 font-medium">{item.name}</td>
-                  <td className="py-3 text-gray-800 font-medium text-center">{item.quantity}</td>
-                  <td className="py-3 text-gray-800 font-medium text-right">Rp {item.price.toLocaleString()}</td>
-                  <td className="py-3 text-gray-800 font-medium text-right">Rp {(item.price * item.quantity * item.rentalDays).toLocaleString()}</td>
+              {loading ? (
+                <tr><td colSpan={4} className="py-3 text-center text-gray-500">Memuat detail produk...</td></tr>
+              ) : Array.isArray(items) && items.length > 0 ? (
+                items.map(item => (
+                  <tr key={item.id} className="border-b border-gray-100 last:border-b-0">
+                    <td className="py-3 text-gray-800 font-medium">{item.product_name || item.name || item.product_id}</td>
+                    <td className="py-3 text-gray-800 font-medium text-center">{item.quantity}</td>
+                    <td className="py-3 text-gray-800 font-medium text-right">Rp {item.price?.toLocaleString()}</td>
+                    <td className="py-3 text-gray-800 font-medium text-right">Rp {(item.price * item.quantity * (item.rentalDays || item.rental_days || 1)).toLocaleString()}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-3 text-center text-gray-500">
+                    Tidak ada detail produk untuk pesanan ini.
+                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
