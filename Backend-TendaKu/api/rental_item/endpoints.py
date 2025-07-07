@@ -78,32 +78,36 @@ def create():
     required = get_form_data(["rental_id"])  # use only if the field required
     rental_id = required["rental_id"]
     product_id = request.form['product_id']
-    quantity = request.form['quantity']
+    quantity = int(request.form['quantity'])
     rental_days = request.form['rental_days']
     price = request.form['price']
-    
-
-    # image_path = None
-    # if image:
-    #     if image.filename == '' or not allowed_file(image.filename):
-    #         return jsonify({"err_message": "Invalid file format"}), 400
-    #     if len(image.read()) > MAX_FILE_SIZE:
-    #         return jsonify({"err_message": "File is too large"}), 400
-    #     image.seek(0)  # Reset the file pointer after checking size
-    #     image_path = os.path.join(UPLOAD_FOLDER, image.filename)
-    #     image.save(image_path)
 
     connection = get_connection()
     cursor = connection.cursor()
-    insert_query = "INSERT INTO rental_item (rental_id, product_id, quantity, rental_days, price) VALUES (%s, %s, %s, %s, %s)"
-    request_insert = (rental_id, product_id, quantity, rental_days, price)
-    cursor.execute(insert_query, request_insert)
-    connection.commit()  # Commit changes to the database
-    new_id = cursor.lastrowid  # Get the newly inserted rental_item's ID
-    cursor.close()
-    if new_id:
-        return jsonify({"rental_id": rental_id, "message": "Inserted", "id": new_id}), 201
-    return jsonify({"message": "Cant Insert Data"}), 500
+    try:
+        # Cek stok produk cukup
+        cursor.execute("SELECT stock FROM product WHERE id = %s", (product_id,))
+        result = cursor.fetchone()
+        if not result or result[0] < quantity:
+            return jsonify({"message": "Stok produk tidak mencukupi"}), 400
+
+        # Insert rental_item
+        insert_query = "INSERT INTO rental_item (rental_id, product_id, quantity, rental_days, price) VALUES (%s, %s, %s, %s, %s)"
+        request_insert = (rental_id, product_id, quantity, rental_days, price)
+        cursor.execute(insert_query, request_insert)
+        connection.commit()  # Commit changes to the database
+        new_id = cursor.lastrowid  # Get the newly inserted rental_item's ID
+
+        # Kurangi stok produk
+        update_stock_query = "UPDATE product SET stock = stock - %s WHERE id = %s"
+        cursor.execute(update_stock_query, (quantity, product_id))
+        connection.commit()
+        if new_id:
+            return jsonify({"rental_id": rental_id, "message": "Inserted", "id": new_id}), 201
+        return jsonify({"message": "Cant Insert Data"}), 500
+    finally:
+        cursor.close()
+        connection.close()
 
 
 @rental_item_endpoints.route('/update/<rental_item_id>', methods=['PUT'])

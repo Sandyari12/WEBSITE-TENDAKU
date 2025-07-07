@@ -46,14 +46,18 @@ const Products = () => {
       navigate('/login');
       return;
     }
-    console.log('Value of cart from useCart:', cart);
-    const inCart = (cart || []).find(item => item.id === product.id)?.quantity || 0;
-    console.log('Product ID:', product.id, 'Quantity in Cart (inCart):', inCart, 'Product Stock:', product.stock);
-    if (inCart >= product.stock) {
+    // Cari produk asli dari hasil fetch backend
+    const realProduct = products.find(p => String(p.id) === String(product.id));
+    if (!realProduct) {
+      message.error('Produk tidak ditemukan. Silakan refresh halaman.');
+      return;
+    }
+    const inCart = (cart || []).find(item => String(item.id) === String(realProduct.id))?.quantity || 0;
+    if (inCart >= realProduct.stock) {
       message.error('Stok produk tidak mencukupi');
       return;
     }
-    addToCart(product);
+    addToCart(realProduct); // gunakan data produk asli dari backend
     message.success('Produk berhasil ditambahkan ke keranjang');
   };
 

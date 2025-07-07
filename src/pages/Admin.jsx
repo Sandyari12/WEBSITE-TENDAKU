@@ -1,36 +1,120 @@
-import { useState, useEffect } from 'react'
-import { Drawer, Button as AntButton, message, Modal } from 'antd'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import {
-  getProducts,
-  createProduct,
-  updateProduct,
-  deleteProduct,
-  getRentals,
-  updateRental,
-  deleteRental,
-  getPlaylists,
-  createPlaylist,
-  deletePlaylist,
-  getRentalItemsByRentalId,
-} from '../utils/api'
+import { Card, Row, Col, Statistic, Table, Typography } from 'antd';
+import { ShoppingCartOutlined, AppstoreOutlined, PlayCircleOutlined } from '@ant-design/icons';
+import { useState, useEffect } from 'react';
+import { getProducts, getRentals, getPlaylists } from '../utils/api';
+
+const { Title } = Typography;
 
 function Admin() {
+  const [produkCount, setProdukCount] = useState(0);
+  const [pesananCount, setPesananCount] = useState(0);
+  const [playlistCount, setPlaylistCount] = useState(0);
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      setLoading(true);
+      try {
+        const [produk, pesanan, playlist] = await Promise.all([
+          getProducts(),
+          getRentals(),
+          getPlaylists(),
+        ]);
+        setProdukCount(produk.length);
+        setPesananCount(pesanan.length);
+        setPlaylistCount(playlist.length);
+        setRecentOrders(pesanan.slice(-5).reverse()); // 5 pesanan terbaru
+      } catch (err) {
+        // Optional: handle error
+      }
+      setLoading(false);
+    };
+    fetchStats();
+  }, []);
+
+  const columns = [
+    { title: 'ID', dataIndex: 'id', key: 'id', width: 60 },
+    { title: 'Nama', dataIndex: 'name', key: 'name' },
+    { title: 'Tanggal', dataIndex: 'created_at', key: 'created_at', render: (date) => date ? new Date(date).toLocaleString('id-ID') : '-' },
+    { title: 'Status', dataIndex: 'status', key: 'status', render: (status) => status?.charAt(0).toUpperCase() + status?.slice(1) },
+    { title: 'Total', dataIndex: 'total', key: 'total', render: (total) => `Rp ${Number(total || 0).toLocaleString('id-ID')}` },
+  ];
+
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6">Dashboard Admin</h2>
-      {/* Tambahkan statistik, chart, atau ringkasan lain di sini jika perlu */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Contoh statistik cards */}
-        <div className="bg-white rounded-xl shadow p-6 flex flex-col items-center">
-          <span className="text-3xl font-bold text-blue-700">Welcome, Admin!</span>
-          <span className="text-gray-500 mt-2">Kelola produk, pesanan, dan playlist melalui menu di sidebar.</span>
-        </div>
-        {/* Tambahkan card statistik lain jika diinginkan */}
+    <div style={{ minHeight: '100vh', background: '#f5f6fa', padding: 0 }}>
+      <div className="p-6 max-w-7xl mx-auto">
+        {/* <Title level={2} className="mb-6" style={{ color: '#1890ff', fontWeight: 700 }}>Dashboard Admin</Title> */}
+        <Row gutter={[24, 24]} className="mb-8">
+          <Col xs={24} md={8}>
+            <Card
+              style={{ borderRadius: 16, boxShadow: '0 4px 16px rgba(24,144,255,0.08)', transition: 'box-shadow 0.2s' }}
+              className="hover:shadow-lg group"
+              bodyStyle={{ padding: 24 }}
+            >
+              <Statistic
+                title={<span style={{ color: '#888', fontWeight: 500 }}>Total Produk</span>}
+                value={produkCount}
+                valueStyle={{ color: '#1890ff', fontWeight: 700 }}
+                prefix={<AppstoreOutlined style={{ color: '#1890ff', fontSize: 32, marginRight: 8 }} />}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} md={8}>
+            <Card
+              style={{ borderRadius: 16, boxShadow: '0 4px 16px rgba(82,196,26,0.08)', transition: 'box-shadow 0.2s' }}
+              className="hover:shadow-lg group"
+              bodyStyle={{ padding: 24 }}
+            >
+              <Statistic
+                title={<span style={{ color: '#888', fontWeight: 500 }}>Total Pesanan</span>}
+                value={pesananCount}
+                valueStyle={{ color: '#52c41a', fontWeight: 700 }}
+                prefix={<ShoppingCartOutlined style={{ color: '#52c41a', fontSize: 32, marginRight: 8 }} />}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} md={8}>
+            <Card
+              style={{ borderRadius: 16, boxShadow: '0 4px 16px rgba(250,173,20,0.08)', transition: 'box-shadow 0.2s' }}
+              className="hover:shadow-lg group"
+              bodyStyle={{ padding: 24 }}
+            >
+              <Statistic
+                title={<span style={{ color: '#888', fontWeight: 500 }}>Total Playlist</span>}
+                value={playlistCount}
+                valueStyle={{ color: '#faad14', fontWeight: 700 }}
+                prefix={<PlayCircleOutlined style={{ color: '#faad14', fontSize: 32, marginRight: 8 }} />}
+              />
+            </Card>
+          </Col>
+        </Row>
+        <Card
+          title={<span style={{ color: '#222', fontWeight: 600 }}>Pesanan Terbaru</span>}
+          className="mb-8"
+          style={{ borderRadius: 16, boxShadow: '0 2px 8px rgba(24,144,255,0.06)' }}
+          bodyStyle={{ padding: 0 }}
+        >
+          <Table
+            columns={columns}
+            dataSource={recentOrders}
+            rowKey={record => record.id || record.id_rental}
+            loading={loading}
+            pagination={false}
+            bordered
+            size="middle"
+            className="custom-table-header"
+            style={{ borderRadius: 16, overflow: 'hidden' }}
+            components={{
+              header: {
+                cell: (props) => <th style={{ background: '#f0f2f5', fontWeight: 600, color: '#222' }} {...props} />,
+              },
+            }}
+          />
+        </Card>
       </div>
     </div>
   );
 }
 
-export default Admin
+export default Admin;

@@ -75,11 +75,18 @@ const RentalHistory = () => {
       title: 'Tanggal',
       dataIndex: 'created_at',
       key: 'created_at',
-      render: (date) => date ? new Date(date).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      }) : '-'
+      render: (date) => {
+        if (!date) return '-';
+        // Cek format 'YYYY-MM-DD HH:mm:ss'
+        const match = date.match(/^([0-9]{4})-([0-9]{2})-([0-9]{2})/);
+        if (!match) return date; // fallback tampilkan string aslinya
+        const [_, y, m, d] = match;
+        const bulan = [
+          '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+          'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        ];
+        return `${Number(d)} ${bulan[Number(m)]} ${y}`;
+      }
     },
     {
       title: 'Total',

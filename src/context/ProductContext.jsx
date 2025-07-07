@@ -1,12 +1,28 @@
-import React, { createContext, useContext, useState } from "react";
-import { products as initialProducts } from "../data/products";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { getProducts } from "../utils/api";
 
 const ProductContext = createContext();
 
 export const useProducts = () => useContext(ProductContext);
 
 export const ProductProvider = ({ children }) => {
-  const [products, setProducts] = useState(initialProducts);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch products from backend on mount
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const data = await getProducts();
+        setProducts(data);
+      } catch (err) {
+        // Optional: handle error
+      }
+      setLoading(false);
+    };
+    fetchProducts();
+  }, []);
 
   // Fungsi untuk menambah produk baru
   const addProduct = (product) => {
@@ -23,7 +39,7 @@ export const ProductProvider = ({ children }) => {
   };
 
   // Fungsi untuk reset stok (opsional, untuk testing/demo)
-  const resetStock = () => setProducts(initialProducts);
+  const resetStock = () => setProducts([]);
 
   // Fungsi untuk mengedit produk
   const editProduct = (updatedProduct) => {
@@ -36,7 +52,7 @@ export const ProductProvider = ({ children }) => {
   };
 
   return (
-    <ProductContext.Provider value={{ products, addProduct, editProduct, deleteProduct, reduceStock, resetStock }}>
+    <ProductContext.Provider value={{ products, setProducts, loading, addProduct, editProduct, deleteProduct, reduceStock, resetStock }}>
       {children}
     </ProductContext.Provider>
   );

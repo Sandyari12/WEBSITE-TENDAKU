@@ -100,7 +100,7 @@ const RentalForm = () => {
       
       const data = await res.json();
       const rentalId = data.id;
-      
+
       // 2. Create rental_item
       if (product) {
         const itemForm = new FormData();

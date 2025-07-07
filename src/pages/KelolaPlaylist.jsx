@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Drawer, Button as AntButton, message, Modal } from 'antd';
-import { getPlaylists, createPlaylist, deletePlaylist } from '../utils/api';
+import { getPlaylists, createPlaylist, deletePlaylist, updatePlaylist } from '../utils/api';
 
 function KelolaPlaylist() {
   const [playlists, setPlaylists] = useState([]);
@@ -10,7 +10,6 @@ function KelolaPlaylist() {
     play_name: '', play_url: '', play_thumbnail: '', play_genre: '', play_description: ''
   });
   const [editPlaylistId, setEditPlaylistId] = useState(null);
-  const [editPlaylistData, setEditPlaylistData] = useState(null);
 
   useEffect(() => {
     const fetchPlaylists = async () => {
@@ -46,6 +45,39 @@ function KelolaPlaylist() {
     }
   };
 
+  const handleEditPlaylist = (playlist) => {
+    setEditPlaylistId(playlist.id);
+    setNewPlaylist({
+      play_name: playlist.play_name || '',
+      play_url: playlist.play_url || '',
+      play_thumbnail: playlist.play_thumbnail || '',
+      play_genre: playlist.play_genre || '',
+      play_description: playlist.play_description || '',
+    });
+    setDrawerOpen(true);
+  };
+
+  const handleEditPlaylistSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData();
+      formData.append('play_name', newPlaylist.play_name);
+      formData.append('play_url', newPlaylist.play_url);
+      formData.append('play_thumbnail', newPlaylist.play_thumbnail);
+      formData.append('play_genre', newPlaylist.play_genre);
+      formData.append('play_description', newPlaylist.play_description);
+      await updatePlaylist(editPlaylistId, formData);
+      message.success('Playlist berhasil diupdate!');
+      setDrawerOpen(false);
+      setEditPlaylistId(null);
+      setNewPlaylist({ play_name: '', play_url: '', play_thumbnail: '', play_genre: '', play_description: '' });
+      const data = await getPlaylists();
+      setPlaylists(data);
+    } catch (err) {
+      message.error('Gagal mengupdate playlist');
+    }
+  };
+
   const handleDeletePlaylist = (id) => {
     Modal.confirm({
       title: 'Konfirmasi Hapus Playlist',
@@ -68,54 +100,48 @@ function KelolaPlaylist() {
 
   return (
     <div className="space-y-8">
-      <AntButton type="primary" className="mb-4" style={{ backgroundColor: '#2C3E50', borderColor: '#2C3E50' }} onClick={() => { setDrawerOpen(true); setEditPlaylistId(null); setEditPlaylistData(null); }}>
+      <AntButton type="primary" className="mb-4" style={{ backgroundColor: '#2C3E50', borderColor: '#2C3E50' }} onClick={() => { setDrawerOpen(true); setEditPlaylistId(null); setNewPlaylist({ play_name: '', play_url: '', play_thumbnail: '', play_genre: '', play_description: '' }); }}>
         Tambah Playlist
       </AntButton>
       <Drawer
         title={<span style={{ color: '#2C3E50' }}>{editPlaylistId ? 'Edit Playlist' : 'Tambah Playlist Baru'}</span>}
         placement="right"
-        onClose={() => { setDrawerOpen(false); setEditPlaylistId(null); setEditPlaylistData(null); }}
+        onClose={() => { setDrawerOpen(false); setEditPlaylistId(null); setNewPlaylist({ play_name: '', play_url: '', play_thumbnail: '', play_genre: '', play_description: '' }); }}
         open={drawerOpen}
         width={400}
       >
-        {editPlaylistId ? (
-          <form onSubmit={e => { e.preventDefault(); /* handleEditPlaylistSubmit */ }} className="grid grid-cols-1 gap-4">
-            {/* Form edit playlist, implementasi edit bisa ditambahkan sesuai kebutuhan */}
-          </form>
-        ) : (
-          <form onSubmit={handleAddPlaylist} className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Judul Playlist</label>
-              <input type="text" required value={newPlaylist.play_name} onChange={e => setNewPlaylist(prev => ({ ...prev, play_name: e.target.value }))} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">URL Video</label>
-              <input type="url" required value={newPlaylist.play_url} onChange={e => setNewPlaylist(prev => ({ ...prev, play_url: e.target.value }))} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">URL Thumbnail</label>
-              <input type="url" required value={newPlaylist.play_thumbnail} onChange={e => setNewPlaylist(prev => ({ ...prev, play_thumbnail: e.target.value }))} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Genre</label>
-              <select required value={newPlaylist.play_genre} onChange={e => setNewPlaylist(prev => ({ ...prev, play_genre: e.target.value }))} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">Pilih Genre</option>
-                <option value="music">Music</option>
-                <option value="song">Song</option>
-                <option value="education">Education</option>
-                <option value="movie">Movie</option>
-                <option value="others">Others</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Deskripsi</label>
-              <textarea required value={newPlaylist.play_description} onChange={e => setNewPlaylist(prev => ({ ...prev, play_description: e.target.value }))} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows={3} />
-            </div>
-            <div>
-              <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Tambah Playlist</button>
-            </div>
-          </form>
-        )}
+        <form onSubmit={editPlaylistId ? handleEditPlaylistSubmit : handleAddPlaylist} className="grid grid-cols-1 gap-4">
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Judul Playlist</label>
+            <input type="text" required value={newPlaylist.play_name} onChange={e => setNewPlaylist(prev => ({ ...prev, play_name: e.target.value }))} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">URL Video</label>
+            <input type="url" required value={newPlaylist.play_url} onChange={e => setNewPlaylist(prev => ({ ...prev, play_url: e.target.value }))} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">URL Thumbnail</label>
+            <input type="url" required value={newPlaylist.play_thumbnail} onChange={e => setNewPlaylist(prev => ({ ...prev, play_thumbnail: e.target.value }))} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Genre</label>
+            <select required value={newPlaylist.play_genre} onChange={e => setNewPlaylist(prev => ({ ...prev, play_genre: e.target.value }))} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Pilih Genre</option>
+              <option value="music">Music</option>
+              <option value="song">Song</option>
+              <option value="education">Education</option>
+              <option value="movie">Movie</option>
+              <option value="others">Others</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Deskripsi</label>
+            <textarea required value={newPlaylist.play_description} onChange={e => setNewPlaylist(prev => ({ ...prev, play_description: e.target.value }))} className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows={3} />
+          </div>
+          <div>
+            <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">{editPlaylistId ? 'Update Playlist' : 'Tambah Playlist'}</button>
+          </div>
+        </form>
       </Drawer>
       <div className="bg-white rounded-xl p-6 shadow-lg">
         <h3 className="text-xl font-semibold mb-4">Daftar Playlist</h3>
@@ -138,7 +164,7 @@ function KelolaPlaylist() {
                     <a href={playlist.play_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">Lihat Video</a>
                   </td>
                   <td className="py-3 px-4 flex gap-2">
-                    {/* Edit button bisa diimplementasikan */}
+                    <button onClick={() => handleEditPlaylist(playlist)} className="text-blue-600 hover:text-blue-800">Edit</button>
                     <button onClick={() => handleDeletePlaylist(playlist.id)} className="text-red-600 hover:text-red-700">Hapus</button>
                   </td>
                 </tr>

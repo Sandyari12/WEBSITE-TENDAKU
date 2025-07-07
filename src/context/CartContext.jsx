@@ -1,12 +1,13 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useProducts } from './ProductContext';
 import { message } from 'antd';
+import { getProducts } from '../utils/api';
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
-  const { products } = useProducts();
+  const { products, setProducts } = useProducts();
 
   // Load cart from localStorage when component mounts
   useEffect(() => {
@@ -20,6 +21,16 @@ export const CartProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
+
+  // Fungsi untuk refresh produk dari backend
+  const refreshProducts = async () => {
+    try {
+      const data = await getProducts();
+      if (setProducts) setProducts(data);
+    } catch (err) {
+      // Optional: message.error('Gagal refresh produk');
+    }
+  };
 
   const addToCart = (product) => {
     setCart(prevCart => {
@@ -49,26 +60,37 @@ export const CartProvider = ({ children }) => {
     );
   };
 
-  const updateQuantity = (productId, quantity) => {
-    setCart(prevCart => {
-      const productInStock = products.find(p => p.id === productId);
-      if (!productInStock) {
-        console.warn(`Product with ID ${productId} not found in stock data.`);
-        return prevCart;
+  const updateQuantity = async (productId, quantity) => {
+    let productInStock = (products || []).find(p => String(p.id) === String(productId));
+    // Jika products kosong, fetch ulang
+    if (!productInStock) {
+      try {
+        const data = await getProducts();
+        if (setProducts) setProducts(data);
+        productInStock = data.find(p => String(p.id) === String(productId));
+      } catch (err) {
+        message.error('Gagal mengambil data produk. Silakan coba lagi.');
+        return;
       }
-      const maxQuantity = productInStock.stock;
-      const newQuantity = Math.min(Math.max(1, quantity), maxQuantity);
+    }
+    if (!productInStock) {
+      message.error('Produk tidak ditemukan. Silakan refresh halaman.');
+      return;
+    }
+    const maxQuantity = productInStock.stock;
+    const newQuantity = Math.min(Math.max(1, quantity), maxQuantity);
 
-      if (quantity > maxQuantity) {
-        message.error(`Stok ${productInStock.name} hanya tersedia ${maxQuantity} unit.`);
-      }
+    if (quantity > maxQuantity) {
+      message.error(`Stok ${productInStock.name} hanya tersedia ${maxQuantity} unit.`);
+    }
 
-      return prevCart.map(item =>
+    setCart(prevCart =>
+      prevCart.map(item =>
         item.id === productId
           ? { ...item, quantity: newQuantity }
           : item
-      );
-    });
+      )
+    );
   };
 
   const clearCart = () => {

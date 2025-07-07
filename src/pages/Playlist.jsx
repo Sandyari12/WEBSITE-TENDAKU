@@ -85,12 +85,11 @@ const Playlist = () => {
                         <PlayCircleOutlined style={{ fontSize: 48, color: 'white' }} />
                       </div>
                     </div>
-                    <div className="absolute left-0 right-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-3 py-2">
-                      <span className="text-white font-bold text-base line-clamp-2 drop-shadow">
-                        {playlist.play_name}
-                      </span>
-                    </div>
                   </a>
+                  <div className="px-3 pt-2 pb-3">
+                    <div className="font-bold text-base text-gray-800">{playlist.play_name}</div>
+                    <div className="text-gray-600 text-sm">{playlist.play_description}</div>
+                  </div>
                 </div>
             ))}
           </div>

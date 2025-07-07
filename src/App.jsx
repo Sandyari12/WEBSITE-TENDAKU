@@ -21,6 +21,7 @@ import AdminLayout from './components/AdminLayout';
 import KelolaProduk from './pages/KelolaProduk';
 import KelolaPesanan from './pages/KelolaPesanan';
 import KelolaPlaylist from './pages/KelolaPlaylist';
+import Graph from './pages/Graph';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -155,6 +156,16 @@ function App() {
                     <AdminRoute>
                       <AdminLayout>
                         <KelolaPlaylist />
+                      </AdminLayout>
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/graph"
+                  element={
+                    <AdminRoute>
+                      <AdminLayout>
+                        <Graph />
                       </AdminLayout>
                     </AdminRoute>
                   }

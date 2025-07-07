@@ -10,7 +10,7 @@ const menuItems = [
   { key: 'orders', label: 'Kelola Pesanan', icon: <ShoppingCartOutlined />, path: '/kelolapesanan' },
   { key: 'playlists', label: 'Kelola Playlist', icon: <PlayCircleOutlined />, path: '/kelolaplaylist' },
   { key: 'location', label: 'Location', icon: <EnvironmentOutlined />, path: '/admin?tab=location' },
-  { key: 'graph', label: 'Graph', icon: <BarChartOutlined />, path: '/admin?tab=graph' },
+  { key: 'graph', label: 'Graph', icon: <BarChartOutlined />, path: '/admin/graph' },
 ];
 
 const AdminLayout = ({ children }) => {
@@ -32,7 +32,13 @@ const AdminLayout = ({ children }) => {
               <li
                 key={item.key}
                 className={`flex items-center gap-3 py-2 px-3 rounded-lg cursor-pointer transition-colors ${activeKey === item.key ? 'bg-[#2C3E50]' : 'hover:bg-[#2C3E50]'}`}
-                onClick={() => navigate(item.path)}
+                onClick={() => {
+                  if (item.key === 'location') {
+                    window.open('https://maps.app.goo.gl/YRvVNC36m4i26bjR9?g_st=aw', '_blank');
+                  } else {
+                    navigate(item.path);
+                  }
+                }}
               >
                 {item.icon} <span>{item.label}</span>
               </li>
@@ -59,8 +65,8 @@ const AdminLayout = ({ children }) => {
       <div className="flex-1 flex flex-col min-h-screen ml-64">
         {/* Header */}
         <div className="bg-white py-4 px-8 text-2xl font-bold shadow flex items-center justify-between">
-          <span>Dashboard Admin</span>
-        </div>
+        <span>Dashboard Admin</span>
+            </div>
         <main className="p-6 flex-1">{children}</main>
       </div>
     </div>
