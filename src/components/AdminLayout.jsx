@@ -20,7 +20,7 @@ const AdminLayout = ({ children }) => {
   const activeKey = menuItems.find(item => location.pathname === item.path)?.key || 'dashboard';
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-softblue flex">
       {/* Sidebar */}
       <aside className="w-64 bg-[#22304A] text-white flex flex-col items-center py-8 shadow-lg min-h-screen fixed left-0 top-0 h-full z-30">
         <Avatar size={80} src={user?.photo} icon={!user?.photo && <UserOutlined />} className="mb-4 bg-white text-[#22304A]" />
@@ -64,9 +64,9 @@ const AdminLayout = ({ children }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen ml-64">
         {/* Header */}
-        <div className="bg-white py-4 px-8 text-2xl font-bold shadow flex items-center justify-between">
-        <span>Dashboard Admin</span>
-            </div>
+        <div className="bg-softblue py-4 px-8 text-2xl font-bold shadow flex items-center justify-between">
+          <span>Dashboard Admin</span>
+        </div>
         <main className="p-6 flex-1">{children}</main>
       </div>
     </div>

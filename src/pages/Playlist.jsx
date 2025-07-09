@@ -29,7 +29,7 @@ const Playlist = () => {
   }, {});
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-softblue">
       {/* Header Section */}
       <div
         className="w-full h-56 md:h-64 lg:h-72 flex items-center justify-center relative rounded-b-2xl overflow-hidden mb-8"

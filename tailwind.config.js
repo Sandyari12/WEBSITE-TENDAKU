@@ -22,6 +22,7 @@ export default {
           800: '#1e40af',
           900: '#1e3a8a',
         },
+        softblue: '#E7F1FF',
       },
       boxShadow: {
         'soft': '0 2px 4px rgba(0, 0, 0, 0.05)',

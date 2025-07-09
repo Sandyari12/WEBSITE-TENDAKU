@@ -79,7 +79,7 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-softblue">
       <style jsx>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px); }

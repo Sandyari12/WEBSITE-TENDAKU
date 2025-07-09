@@ -69,7 +69,7 @@ const Products = () => {
   });
 
   return (
-    <div>
+    <div className="min-h-screen bg-softblue">
       <Title level={2} style={{ marginBottom: '24px' }}>Daftar Produk</Title>
 
       {/* Filters */}

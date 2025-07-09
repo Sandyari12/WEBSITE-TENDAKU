@@ -42,13 +42,13 @@ function Admin() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f6fa', padding: 0 }}>
+    <div className="min-h-screen bg-softblue p-0">
       <div className="p-6 max-w-7xl mx-auto">
         {/* <Title level={2} className="mb-6" style={{ color: '#1890ff', fontWeight: 700 }}>Dashboard Admin</Title> */}
         <Row gutter={[24, 24]} className="mb-8">
           <Col xs={24} md={8}>
             <Card
-              style={{ borderRadius: 16, boxShadow: '0 4px 16px rgba(24,144,255,0.08)', transition: 'box-shadow 0.2s' }}
+              style={{ borderRadius: 16, boxShadow: '0 4px 16px rgba(24,144,255,0.08)', transition: 'box-shadow 0.2s', background: 'white' }}
               className="hover:shadow-lg group"
               bodyStyle={{ padding: 24 }}
             >
@@ -62,7 +62,7 @@ function Admin() {
           </Col>
           <Col xs={24} md={8}>
             <Card
-              style={{ borderRadius: 16, boxShadow: '0 4px 16px rgba(82,196,26,0.08)', transition: 'box-shadow 0.2s' }}
+              style={{ borderRadius: 16, boxShadow: '0 4px 16px rgba(82,196,26,0.08)', transition: 'box-shadow 0.2s', background: 'white' }}
               className="hover:shadow-lg group"
               bodyStyle={{ padding: 24 }}
             >
@@ -76,7 +76,7 @@ function Admin() {
           </Col>
           <Col xs={24} md={8}>
             <Card
-              style={{ borderRadius: 16, boxShadow: '0 4px 16px rgba(250,173,20,0.08)', transition: 'box-shadow 0.2s' }}
+              style={{ borderRadius: 16, boxShadow: '0 4px 16px rgba(250,173,20,0.08)', transition: 'box-shadow 0.2s', background: 'white' }}
               className="hover:shadow-lg group"
               bodyStyle={{ padding: 24 }}
             >
@@ -92,7 +92,7 @@ function Admin() {
         <Card
           title={<span style={{ color: '#222', fontWeight: 600 }}>Pesanan Terbaru</span>}
           className="mb-8"
-          style={{ borderRadius: 16, boxShadow: '0 2px 8px rgba(24,144,255,0.06)' }}
+          style={{ borderRadius: 16, boxShadow: '0 2px 8px rgba(24,144,255,0.06)', background: 'transparent' }}
           bodyStyle={{ padding: 0 }}
         >
           <Table
@@ -104,7 +104,7 @@ function Admin() {
             bordered
             size="middle"
             className="custom-table-header"
-            style={{ borderRadius: 16, overflow: 'hidden' }}
+            style={{ borderRadius: 16, overflow: 'hidden', background: 'transparent' }}
             components={{
               header: {
                 cell: (props) => <th style={{ background: '#f0f2f5', fontWeight: 600, color: '#222' }} {...props} />,

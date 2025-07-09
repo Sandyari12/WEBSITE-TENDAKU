@@ -129,12 +129,11 @@
   line-height: 1.6;
   font-weight: 400;
   color: #1a1a1a;
-  background-color: #f8f9fa;
+  /* background-color: #f8f9fa; */
 }
 
-body {
-  margin: 0;
-  min-width: 320px;
+body, #root {
+  background: #E7F1FF !important;
   min-height: 100vh;
 }
 

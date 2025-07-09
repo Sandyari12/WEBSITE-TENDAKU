@@ -68,7 +68,7 @@ const Layout = ({ children }) => {
   );
 
   return (
-    <AntLayout className="min-h-screen">
+    <AntLayout className="min-h-screen bg-softblue" style={{ background: 'transparent' }}>
       <Header className="flex items-center justify-between px-6" style={{ background: '#2C3E50' }}>
         <div className="flex items-center w-full">
           <div className="text-white text-2xl font-extrabold mr-8">TendaKu</div>
@@ -136,10 +136,10 @@ const Layout = ({ children }) => {
           )}
         </div>
       </Header>
-      <Content className="p-6">
+      <Content className="p-6 bg-transparent">
         {children}
       </Content>
-      <Footer className="text-center">
+      <Footer className="text-center bg-transparent">
         TendaKu ©{new Date().getFullYear()} Created by ZenCode
       </Footer>
     </AntLayout>
